@@ -243,3 +243,26 @@ export function useSaveAssessment() {
 
   return { saveAssessment, loading, error };
 }
+
+// Hook to get all assessments count
+export function useAllAssessments() {
+  return useDirectDb<Assessment[]>(
+    () => dbOperations.getAssessments(),
+    []
+  );
+}
+
+// Hook to get database statistics
+export function useDatabaseStats() {
+  return useDirectDb<{
+    jobs: number;
+    candidates: number;
+    users: number;
+    assessments: number;
+    responses: number;
+    version: number;
+  }>(
+    () => dbOperations.getDatabaseStats(),
+    []
+  );
+}

@@ -19,20 +19,18 @@ import {
   Award,
   Target,
   Share2,
-  Heart,
   Copy,
   CheckCircle,
   BarChart3,
   TrendingUp,
   UserPlus,
-  FileText,
-  Download,
-  ExternalLink
+  FileText
 } from 'lucide-react';
-import { useJobs } from '../hooks/useApiDirect';
+import { useJobs, useUpdateJob } from '../hooks/useApiDirect';
 import { useAssessments } from '../hooks/useApiDirect';
 import { JobFormModal } from '../components';
 import { Badge } from '../components/Badge';
+import { useSimpleToast } from '../components/SimpleToast';
 import type { Job } from '../types';
 
 export function JobDetail() {
@@ -48,6 +46,10 @@ export function JobDetail() {
   
   // Use the assessments hook to get assessment data
   const { data: assessments } = useAssessments(jobId);
+  
+  // Use the update job hook for archive functionality
+  const updateJobHook = useUpdateJob();
+  const { showToast } = useSimpleToast();
 
   useEffect(() => {
     if (!jobId) {
@@ -70,16 +72,30 @@ export function JobDetail() {
   const handleArchiveToggle = async () => {
     if (!job) return;
 
+    console.log('🔄 JobDetail Archive Toggle: Starting for job:', { id: job.id, title: job.title, currentStatus: job.status });
+
     try {
+      const newStatus = job.status === 'active' ? 'archived' : 'active';
+      console.log('🔄 JobDetail Archive Toggle: New status will be:', newStatus);
+      
       // Update the job status optimistically
-      setJob(prev => prev ? { ...prev, status: prev.status === 'archived' ? 'active' : 'archived' } : null);
+      setJob(prev => prev ? { ...prev, status: newStatus } : null);
+      
+      console.log('🔄 JobDetail Archive Toggle: Calling updateJob API...');
+      const updatedJob = await updateJobHook.updateJob(job.id, { status: newStatus });
+      console.log('✅ JobDetail Archive Toggle: API call successful, updated job:', updatedJob);
       
       // Refetch to sync with database
+      console.log('🔄 JobDetail Archive Toggle: Refreshing data...');
       await refetch();
+      
+      console.log('✅ JobDetail Archive Toggle: Showing success toast');
+      showToast(`Job "${job.title}" ${newStatus === 'archived' ? 'archived' : 'restored'} successfully`, 'success');
     } catch (error) {
-      console.error('Failed to toggle job status:', error);
+      console.error('❌ JobDetail Archive Toggle: Failed to toggle job status:', error);
       // Revert optimistic update
-      setJob(prev => prev ? { ...prev, status: prev.status === 'active' ? 'archived' : 'active' } : null);
+      setJob(prev => prev ? { ...prev, status: prev.status === 'archived' ? 'active' : 'archived' } : null);
+      showToast('Failed to update job status', 'error');
     }
   };
 
@@ -176,13 +192,6 @@ export function JobDetail() {
                   <Share2 className="h-4 w-4 mr-2" />
                   Share
                 </button>
-                <button
-                  className="flex items-center px-4 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors text-sm"
-                  title="Save Job"
-                >
-                  <Heart className="h-4 w-4 mr-2" />
-                  Save
-                </button>
               </div>
             </div>
           </div>
@@ -271,15 +280,31 @@ export function JobDetail() {
                 </button>
                 
                 <button
-                  onClick={handleArchiveToggle}
+                  onClick={() => {
+                    console.log('🎯 JobDetail Archive Button: Clicked for job:', { id: job.id, title: job.title, status: job.status });
+                    console.log('🎯 JobDetail Archive Button: updateJobHook.loading:', updateJobHook.loading);
+                    if (!updateJobHook.loading) {
+                      handleArchiveToggle();
+                    } else {
+                      console.log('⚠️ JobDetail Archive Button: Blocked due to loading state');
+                    }
+                  }}
                   className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors shadow-sm ${
-                    job.status === 'archived' 
-                      ? 'bg-green-600 text-white hover:bg-green-700' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    updateJobHook.loading 
+                      ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                      : job.status === 'archived' 
+                        ? 'bg-green-600 text-white hover:bg-green-700' 
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                   title={job.status === 'archived' ? 'Unarchive Job' : 'Archive Job'}
+                  disabled={updateJobHook.loading}
                 >
-                  {job.status === 'archived' ? (
+                  {updateJobHook.loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {job.status === 'archived' ? 'Unarchiving...' : 'Archiving...'}
+                    </>
+                  ) : job.status === 'archived' ? (
                     <>
                       <Eye className="h-4 w-4 mr-2" />
                       Unarchive
@@ -508,21 +533,6 @@ export function JobDetail() {
                 <button className="w-full flex items-center justify-center px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
                   <Copy className="h-4 w-4 mr-2" />
                   Copy Job Link
-                </button>
-                
-                <button className="w-full flex items-center justify-center px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Duplicate Job
-                </button>
-                
-                <button className="w-full flex items-center justify-center px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Report
-                </button>
-                
-                <button className="w-full flex items-center justify-center px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View Public Page
                 </button>
               </div>
             </div>

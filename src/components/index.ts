@@ -33,5 +33,17 @@ export * from './AssessmentPreview';
 // Authentication Components
 export * from './LoginForm';
 export * from './SignupForm';
-export * from './UserMenu';
 export * from './ProtectedRoute';
+
+// Toast System
+export * from './Toast';
+export * from './SimpleToast';
+
+// Notification Components
+export * from './NotificationBell';
+export * from './NotificationDropdown';
+export * from './NotificationItem';
+export * from './NotificationErrorBoundary';
+export * from './NotificationTester';
+export * from './SimpleNotificationBell';
+export * from './UserMenu';

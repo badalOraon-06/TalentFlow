@@ -650,60 +650,82 @@ export function NewQuestionButton({ onAddQuestion }: NewQuestionButtonProps) {
     { type: 'file-upload', label: 'File Upload', description: 'Upload documents or files', icon: Upload, color: 'bg-teal-500' },
   ];
 
+  const handleQuestionTypeSelect = (type: QuestionType) => {
+    console.log('Question type selected:', type); // Debug log
+    onAddQuestion(type);
+    setIsOpen(false);
+  };
+
+  if (isOpen) {
+    return (
+      <>
+        {/* Backdrop overlay */}
+        <div 
+          className="fixed inset-0 z-40 bg-black/20" 
+          onClick={() => setIsOpen(false)}
+        />
+        
+        {/* Modal dialog */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="bg-white border-2 border-gray-200 rounded-2xl shadow-2xl w-full max-w-md max-h-[80vh] overflow-hidden">
+            <div className="p-6">
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl mb-4 shadow-lg">
+                <h3 className="text-lg font-bold mb-1">Choose Question Type</h3>
+                <p className="text-sm text-blue-100">Select the type of question you want to add</p>
+              </div>
+              
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {questionTypes.map((type) => {
+                  const IconComponent = type.icon;
+                  return (
+                    <button
+                      key={type.type}
+                      onClick={() => handleQuestionTypeSelect(type.type)}
+                      className="w-full text-left p-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 border-2 border-gray-100 hover:border-blue-200 group"
+                    >
+                      <div className="flex items-start space-x-4">
+                        <div className={`p-3 ${type.color} rounded-xl text-white shadow-md group-hover:shadow-lg transition-shadow duration-200`}>
+                          <IconComponent className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">{type.label}</div>
+                          <div className="text-sm text-gray-600 group-hover:text-blue-600 transition-colors duration-200 mt-1">{type.description}</div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <div className="mt-6 pt-4 border-t border-gray-200">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <div className="relative">
       <Button
         variant="outline"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          console.log('Add New Question button clicked'); // Debug log
+          setIsOpen(true);
+        }}
         className="bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border-2 border-blue-200 hover:border-blue-300 text-blue-700 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
       >
         <Plus className="h-4 w-4 mr-2" />
         Add New Question
       </Button>
-
-      {isOpen && (
-        <div className="absolute top-full left-0 mt-3 w-80 bg-white border-2 border-gray-200 rounded-2xl shadow-2xl z-20 backdrop-blur-sm">
-          <div className="p-4">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl mb-4 shadow-lg">
-              <h3 className="text-sm font-bold mb-1">Choose Question Type</h3>
-              <p className="text-xs text-blue-100">Select the type of question you want to add</p>
-            </div>
-            
-            <div className="space-y-2 max-h-80 overflow-y-auto">
-              {questionTypes.map((type) => {
-                const IconComponent = type.icon;
-                return (
-                  <button
-                    key={type.type}
-                    onClick={() => {
-                      onAddQuestion(type.type);
-                      setIsOpen(false);
-                    }}
-                    className="w-full text-left p-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 border-2 border-transparent hover:border-blue-200 group"
-                  >
-                    <div className="flex items-start space-x-4">
-                      <div className={`p-3 ${type.color} rounded-xl text-white shadow-md group-hover:shadow-lg transition-shadow duration-200`}>
-                        <IconComponent className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors duration-200">{type.label}</div>
-                        <div className="text-sm text-gray-600 group-hover:text-blue-600 transition-colors duration-200 mt-1">{type.description}</div>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isOpen && (
-        <div 
-          className="fixed inset-0 z-10 backdrop-blur-sm bg-black/10" 
-          onClick={() => setIsOpen(false)}
-        />
-      )}
     </div>
   );
 }

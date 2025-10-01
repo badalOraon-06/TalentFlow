@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Modal, Input, Textarea, Button } from '../components';
 import { useCreateJob, useUpdateJob } from '../hooks/useApiDirect';
+import { useSimpleToast } from './SimpleToast';
 import type { Job } from '../types';
 
 // Simplified validation schema to match current API
@@ -28,6 +29,7 @@ interface JobFormModalProps {
 export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalProps) {
   const [tagInput, setTagInput] = useState('');
   const isEditing = !!job;
+  const { showToast } = useSimpleToast();
 
   const createJobHook = useCreateJob();
   const updateJobHook = useUpdateJob();
@@ -110,8 +112,10 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
       let result;
       if (isEditing && job) {
         result = await updateJobHook.updateJob(job.id, jobData);
+        showToast(`Job "${result.title}" updated successfully`, 'success');
       } else {
         result = await createJobHook.createJob(jobData);
+        showToast(`Job "${result.title}" created successfully`, 'success');
       }
 
       onSuccess?.(result);
@@ -119,6 +123,7 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
       reset();
     } catch (error) {
       console.error('Failed to save job:', error);
+      showToast('Failed to save job. Please try again.', 'error');
     }
   };
 

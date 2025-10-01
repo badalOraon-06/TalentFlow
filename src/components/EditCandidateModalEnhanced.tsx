@@ -8,6 +8,7 @@ import { Modal } from './Modal';
 import { Button } from './Button';
 import { Badge } from './Badge';
 import { useJobs, useUpdateCandidate } from '../hooks/useApiDirect';
+import { useSimpleToast } from './SimpleToast';
 import type { Job, Candidate, CandidateStage, ExperienceLevel } from '../types';
 
 interface EditCandidateModalEnhancedProps {
@@ -45,6 +46,7 @@ const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR'];
 
 export function EditCandidateModalEnhanced({ isOpen, onClose, onSuccess, candidate }: EditCandidateModalEnhancedProps) {
   const [activeTab, setActiveTab] = useState('basic');
+  const { showToast } = useSimpleToast();
   const [formData, setFormData] = useState({
     // Basic Information
     name: '',
@@ -305,11 +307,17 @@ export function EditCandidateModalEnhanced({ isOpen, onClose, onSuccess, candida
       await updateCandidate(candidate.id, candidateData);
 
       // Success - close modal and notify parent
+      showToast(`Candidate "${candidateData.name}" updated successfully`, 'success');
+      
       onClose();
       onSuccess();
     } catch (err) {
       // Error is already handled by the hook
       console.error('Failed to update candidate:', err);
+      showToast(
+        err instanceof Error ? err.message : 'Failed to update candidate. Please try again.',
+        'error'
+      );
     }
   };
 

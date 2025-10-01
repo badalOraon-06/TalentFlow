@@ -170,25 +170,6 @@ export function AdminRoute({ children }: { children: ReactNode }) {
   );
 }
 
-export function HRRoute({ children }: { children: ReactNode }) {
-  return (
-    <ProtectedRoute 
-      requiredRole="hr_manager"
-      fallbackPath="/unauthorized"
-    >
-      {children}
-    </ProtectedRoute>
-  );
-}
-
-export function RecruiterRoute({ children }: { children: ReactNode }) {
-  return (
-    <ProtectedRoute requiredRole="recruiter">
-      {children}
-    </ProtectedRoute>
-  );
-}
-
 // Permission-based route components
 export function CanManageUsersRoute({ children }: { children: ReactNode }) {
   return (

@@ -33,36 +33,41 @@ interface MetricCardProps {
 
 function MetricCard({ title, value, change, trend, icon, color, onClick }: MetricCardProps) {
   const colorClasses = {
-    blue: 'from-blue-500 to-blue-600 shadow-blue-500/25',
-    green: 'from-green-500 to-green-600 shadow-green-500/25',
-    purple: 'from-purple-500 to-purple-600 shadow-purple-500/25',
-    orange: 'from-orange-500 to-orange-600 shadow-orange-500/25',
-    red: 'from-red-500 to-red-600 shadow-red-500/25',
-    indigo: 'from-indigo-500 to-indigo-600 shadow-indigo-500/25'
+    blue: 'from-blue-600 via-blue-700 to-blue-800 shadow-blue-500/30',
+    green: 'from-emerald-600 via-emerald-700 to-emerald-800 shadow-emerald-500/30',
+    purple: 'from-violet-600 via-violet-700 to-violet-800 shadow-violet-500/30',
+    orange: 'from-amber-600 via-orange-700 to-orange-800 shadow-amber-500/30',
+    red: 'from-rose-600 via-rose-700 to-rose-800 shadow-rose-500/30',
+    indigo: 'from-indigo-600 via-indigo-700 to-indigo-800 shadow-indigo-500/30'
   };
 
   const changeColors = {
-    up: 'text-green-600',
-    down: 'text-red-600',
-    neutral: 'text-gray-600'
+    up: 'text-emerald-100 bg-emerald-500/20',
+    down: 'text-rose-100 bg-rose-500/20',
+    neutral: 'text-blue-100 bg-blue-500/20'
   };
 
   return (
     <div 
-      className={`bg-gradient-to-br ${colorClasses[color]} rounded-3xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 ${onClick ? 'cursor-pointer' : ''}`}
+      className={`bg-gradient-to-br ${colorClasses[color]} rounded-2xl p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 hover:scale-[1.02] ${onClick ? 'cursor-pointer' : ''} border border-white/10 backdrop-blur-sm`}
       onClick={onClick}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between h-full">
         <div className="flex-1">
-          <div className="flex items-center mb-2">
-            <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
               {icon}
             </div>
+            {trend && (
+              <div className={`text-xs px-3 py-1 rounded-full font-medium ${changeColors[trend]} border border-white/20`}>
+                {trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→'}
+              </div>
+            )}
           </div>
-          <div className="text-3xl font-bold mb-1">{value}</div>
-          <div className="text-sm font-medium opacity-90">{title}</div>
+          <div className="text-3xl font-bold mb-2 tracking-tight">{value}</div>
+          <div className="text-sm font-medium text-white/90 mb-2">{title}</div>
           {change && (
-            <div className={`text-xs mt-2 ${trend ? changeColors[trend] : 'text-white'} bg-white bg-opacity-20 rounded-full px-2 py-1 inline-block`}>
+            <div className="text-xs text-white/75 font-medium">
               {change}
             </div>
           )}
@@ -82,21 +87,21 @@ interface QuickActionProps {
 
 function QuickAction({ title, description, icon, to, color }: QuickActionProps) {
   const colorClasses = {
-    blue: 'border-blue-400 hover:bg-blue-50 bg-blue-100 hover:bg-blue-200 text-blue-600',
-    green: 'border-green-400 hover:bg-green-50 bg-green-100 hover:bg-green-200 text-green-600',
-    purple: 'border-purple-400 hover:bg-purple-50 bg-purple-100 hover:bg-purple-200 text-purple-600'
+    blue: 'hover:border-blue-500/50 hover:bg-blue-50/50 bg-blue-50/30 text-blue-700 hover:text-blue-800',
+    green: 'hover:border-emerald-500/50 hover:bg-emerald-50/50 bg-emerald-50/30 text-emerald-700 hover:text-emerald-800',
+    purple: 'hover:border-violet-500/50 hover:bg-violet-50/50 bg-violet-50/30 text-violet-700 hover:text-violet-800'
   };
 
   return (
     <Link to={to}>
-      <div className={`bg-white rounded-2xl border-2 border-gray-200 p-6 hover:${colorClasses[color as keyof typeof colorClasses].split(' ')[0]} hover:shadow-lg transition-all duration-300 group`}>
+      <div className={`bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200/50 p-6 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-500 group hover:-translate-y-1 ${colorClasses[color as keyof typeof colorClasses]}`}>
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <div className={`w-12 h-12 ${colorClasses[color as keyof typeof colorClasses].split(' ')[2]} rounded-xl flex items-center justify-center mb-4 group-hover:${colorClasses[color as keyof typeof colorClasses].split(' ')[3]} transition-colors`}>
-              {icon}
+            <div className="w-14 h-14 bg-gradient-to-br from-white to-gray-50 rounded-xl flex items-center justify-center mb-4 shadow-lg border border-gray-200/50 group-hover:scale-110 transition-transform duration-300">
+              <div className="text-current">{icon}</div>
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
-            <p className="text-gray-600 text-sm">{description}</p>
+            <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-current transition-colors">{title}</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
           </div>
           <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
         </div>
@@ -117,29 +122,41 @@ interface RecentActivityItem {
 function RecentActivityFeed({ activities }: { activities: RecentActivityItem[] }) {
   const getActivityStyles = (color: string) => {
     const styles = {
-      blue: { bg: 'bg-blue-100', text: 'text-blue-900 drop-shadow-lg font-bold stroke-2' },
-      green: { bg: 'bg-green-100', text: 'text-green-900 drop-shadow-lg font-bold stroke-2' },
-      purple: { bg: 'bg-purple-100', text: 'text-purple-900 drop-shadow-lg font-bold stroke-2' },
-      orange: { bg: 'bg-orange-100', text: 'text-orange-900 drop-shadow-lg font-bold stroke-2' }
+      blue: { bg: 'bg-gradient-to-br from-blue-500 to-blue-600', text: 'text-white', border: 'border-blue-200', bgLight: 'bg-blue-50/50' },
+      green: { bg: 'bg-gradient-to-br from-emerald-500 to-emerald-600', text: 'text-white', border: 'border-emerald-200', bgLight: 'bg-emerald-50/50' },
+      purple: { bg: 'bg-gradient-to-br from-violet-500 to-violet-600', text: 'text-white', border: 'border-violet-200', bgLight: 'bg-violet-50/50' },
+      orange: { bg: 'bg-gradient-to-br from-amber-500 to-amber-600', text: 'text-white', border: 'border-amber-200', bgLight: 'bg-amber-50/50' }
     };
     return styles[color as keyof typeof styles] || styles.blue;
   };
 
   return (
     <div className="space-y-4">
-      {activities.map((activity) => {
+      {activities.map((activity, index) => {
         const styles = getActivityStyles(activity.color);
         return (
-          <div key={activity.id} className="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-            <div className={`w-10 h-10 ${styles.bg} rounded-full flex items-center justify-center flex-shrink-0`}>
-              <Activity className={`h-5 w-5 ${styles.text}`} />
+          <div key={activity.id} className={`flex items-start space-x-4 p-5 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 hover:shadow-lg hover:bg-white/80 transition-all duration-300 hover:-translate-y-1 ${styles.bgLight}`}>
+            <div className={`w-12 h-12 ${styles.bg} rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg border ${styles.border}`}>
+              <Activity className={`h-6 w-6 ${styles.text}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900">{activity.title}</p>
-              <p className="text-sm text-gray-600">{activity.description}</p>
-              <p className="text-xs text-gray-500 mt-1">
-                {activity.timestamp.toLocaleDateString()} at {activity.timestamp.toLocaleTimeString()}
-              </p>
+              <p className="text-base font-bold text-gray-900 mb-1">{activity.title}</p>
+              <p className="text-sm text-gray-600 leading-relaxed mb-2">{activity.description}</p>
+              <div className="flex items-center space-x-2">
+                <div className="h-1 w-1 bg-gray-400 rounded-full"></div>
+                <p className="text-xs font-medium text-gray-500">
+                  {activity.timestamp.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })} at {activity.timestamp.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                </p>
+              </div>
+            </div>
+            <div className="text-xs font-semibold text-gray-400 mt-1">
+              #{index + 1}
             </div>
           </div>
         );
@@ -227,29 +244,44 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
       <div className="max-w-7xl mx-auto space-y-8">
-        {/* Welcome Header */}
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                  <BarChart3 className="h-8 w-8 text-blue-700" />
+        {/* Professional Welcome Header */}
+        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 px-8 py-8 relative overflow-hidden">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-white/5 to-transparent rounded-full -translate-y-48 translate-x-48"></div>
+            
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center space-x-6">
+                <div className="w-20 h-20 bg-gradient-to-br from-white/20 to-white/10 rounded-3xl flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-xl">
+                  <BarChart3 className="h-10 w-10 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-white">Welcome to TalentFlow</h1>
-                  <p className="text-indigo-100 text-lg">Your hiring command center</p>
+                  <h1 className="text-4xl font-bold text-white mb-2 tracking-tight">TalentFlow Dashboard</h1>
+                  <p className="text-blue-100 text-lg font-medium">Your comprehensive hiring command center</p>
+                  <div className="flex items-center space-x-4 mt-3">
+                    <div className="flex items-center space-x-2 text-blue-200 text-sm">
+                      <Activity className="h-4 w-4" />
+                      <span>Real-time insights</span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-white text-sm opacity-90">
-                  {new Date().toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
+                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
+                  <div className="text-white text-sm font-medium mb-1">
+                    {new Date().toLocaleDateString('en-US', { 
+                      weekday: 'long'
+                    })}
+                  </div>
+                  <div className="text-blue-100 text-lg font-bold">
+                    {new Date().toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
@@ -263,7 +295,7 @@ export function Dashboard() {
             value={totalJobs}
             change="+12% this month"
             trend="up"
-            icon={<Building2 className="h-6 w-6 text-blue-600" />}
+            icon={<Building2 className="h-6 w-6" />}
             color="blue"
             onClick={() => navigate('/jobs')}
           />
@@ -272,7 +304,7 @@ export function Dashboard() {
             value={activeJobs}
             change={`${Math.round((activeJobs / totalJobs) * 100)}% of total`}
             trend="neutral"
-            icon={<Target className="h-6 w-6 text-green-600" />}
+            icon={<Target className="h-6 w-6" />}
             color="green"
             onClick={() => navigate('/jobs')}
           />
@@ -281,7 +313,7 @@ export function Dashboard() {
             value={totalCandidates}
             change="+25% this week"
             trend="up"
-            icon={<Users className="h-6 w-6 text-purple-600" />}
+            icon={<Users className="h-6 w-6" />}
             color="purple"
             onClick={() => navigate('/candidates')}
           />
@@ -290,83 +322,89 @@ export function Dashboard() {
             value={activeCandidates}
             change={`${Math.round((activeCandidates / totalCandidates) * 100)}% active`}
             trend="up"
-            icon={<TrendingUp className="h-6 w-6 text-orange-600" />}
+            icon={<TrendingUp className="h-6 w-6" />}
             color="orange"
             onClick={() => navigate('/candidates')}
           />
         </div>
 
-        {/* Pipeline Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Candidate Pipeline */}
-          <div className="lg:col-span-2 bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-green-600 to-teal-600 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <TrendingUp className="h-6 w-6 text-green-700" />
+        {/* Professional Pipeline Overview */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Enhanced Candidate Pipeline */}
+          <div className="xl:col-span-2 bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-8 py-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20"></div>
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+                    <TrendingUp className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Candidate Pipeline</h2>
-                    <p className="text-green-100 text-sm">Current stage distribution</p>
+                    <h2 className="text-2xl font-bold text-white tracking-tight">Candidate Pipeline</h2>
+                    <p className="text-emerald-100 text-sm font-medium">Real-time stage distribution</p>
                   </div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20">
+                  <div className="text-white font-bold text-lg">{totalCandidates}</div>
+                  <div className="text-emerald-100 text-xs">Total</div>
                 </div>
               </div>
             </div>
             
-            <div className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-8">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                  { stage: 'applied', label: 'Applied', bgColor: 'bg-blue-50', borderColor: 'border-blue-200', iconBg: 'bg-blue-100', hoverBg: 'hover:bg-blue-100', icon: <FileText className="h-5 w-5 text-blue-700 drop-shadow-sm" /> },
-                  { stage: 'screen', label: 'Screening', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200', iconBg: 'bg-yellow-100', hoverBg: 'hover:bg-yellow-100', icon: <Eye className="h-5 w-5 text-yellow-700 drop-shadow-sm" /> },
-                  { stage: 'tech', label: 'Technical', bgColor: 'bg-purple-50', borderColor: 'border-purple-200', iconBg: 'bg-purple-100', hoverBg: 'hover:bg-purple-100', icon: <ClipboardList className="h-5 w-5 text-purple-700 drop-shadow-sm" /> },
-                  { stage: 'offer', label: 'Offer', bgColor: 'bg-green-50', borderColor: 'border-green-200', iconBg: 'bg-green-100', hoverBg: 'hover:bg-green-100', icon: <CheckCircle className="h-5 w-5 text-green-700 drop-shadow-sm" /> }
-                ].map(({ stage, label, bgColor, borderColor, iconBg, hoverBg, icon }) => (
-                  <div key={stage} className={`${bgColor} border-2 ${borderColor} rounded-xl p-4 text-center ${hoverBg} transition-colors cursor-pointer`}>
-                    <div className={`w-12 h-12 ${iconBg} rounded-xl flex items-center justify-center mx-auto mb-3`}>
+                  { stage: 'applied', label: 'Applied', bgColor: 'bg-gradient-to-br from-blue-50 to-blue-100', borderColor: 'border-blue-300/50', iconBg: 'bg-blue-500', hoverBg: 'hover:from-blue-100 hover:to-blue-200', icon: <FileText className="h-5 w-5 text-white" />, color: 'text-blue-700' },
+                  { stage: 'screen', label: 'Screening', bgColor: 'bg-gradient-to-br from-amber-50 to-amber-100', borderColor: 'border-amber-300/50', iconBg: 'bg-amber-500', hoverBg: 'hover:from-amber-100 hover:to-amber-200', icon: <Eye className="h-5 w-5 text-white" />, color: 'text-amber-700' },
+                  { stage: 'tech', label: 'Technical', bgColor: 'bg-gradient-to-br from-violet-50 to-violet-100', borderColor: 'border-violet-300/50', iconBg: 'bg-violet-500', hoverBg: 'hover:from-violet-100 hover:to-violet-200', icon: <ClipboardList className="h-5 w-5 text-white" />, color: 'text-violet-700' },
+                  { stage: 'offer', label: 'Offer', bgColor: 'bg-gradient-to-br from-emerald-50 to-emerald-100', borderColor: 'border-emerald-300/50', iconBg: 'bg-emerald-500', hoverBg: 'hover:from-emerald-100 hover:to-emerald-200', icon: <CheckCircle className="h-5 w-5 text-white" />, color: 'text-emerald-700' }
+                ].map(({ stage, label, bgColor, borderColor, iconBg, hoverBg, icon, color }) => (
+                  <div key={stage} className={`${bgColor} border-2 ${borderColor} rounded-2xl p-6 text-center ${hoverBg} transition-all duration-300 cursor-pointer hover:shadow-lg hover:-translate-y-1`}>
+                    <div className={`w-14 h-14 ${iconBg} rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg`}>
                       {icon}
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">{stageDistribution[stage] || 0}</div>
-                    <div className="text-sm text-gray-600 font-medium">{label}</div>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">{stageDistribution[stage] || 0}</div>
+                    <div className={`text-sm font-semibold ${color}`}>{label}</div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-orange-600 to-red-600 px-6 py-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <Zap className="h-6 w-6 text-red-700" />
+          {/* Enhanced Quick Actions */}
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden">
+            <div className="bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 px-8 py-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-pink-500/20"></div>
+              <div className="relative flex items-center space-x-4">
+                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+                  <Zap className="h-7 w-7 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">Quick Actions</h2>
-                  <p className="text-orange-100 text-sm">Get things done fast</p>
+                  <h2 className="text-2xl font-bold text-white tracking-tight">Quick Actions</h2>
+                  <p className="text-orange-100 text-sm font-medium">Streamline your workflow</p>
                 </div>
               </div>
             </div>
             
-            <div className="p-6 space-y-4">
+            <div className="p-8 space-y-6">
               <QuickAction
                 title="Post New Job"
                 description="Create a new job posting"
-                icon={<Plus className="h-6 w-6 text-blue-900" />}
+                icon={<Plus className="h-6 w-6" />}
                 to="/jobs"
                 color="blue"
               />
               <QuickAction
                 title="Review Candidates"
                 description="Check candidate applications"
-                icon={<Users className="h-6 w-6 text-green-900" />}
+                icon={<Users className="h-6 w-6" />}
                 to="/candidates"
                 color="green"
               />
               <QuickAction
                 title="Create Assessment"
                 description="Build new assessment"
-                icon={<ClipboardList className="h-6 w-6 text-purple-900" />}
+                icon={<ClipboardList className="h-6 w-6" />}
                 to="/assessments"
                 color="purple"
               />
@@ -374,79 +412,91 @@ export function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Activity & Statistics */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Activity */}
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <Activity className="h-6 w-6 text-purple-700" />
+        {/* Enhanced Recent Activity & Statistics */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          {/* Professional Recent Activity */}
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden">
+            <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-8 py-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-indigo-500/20"></div>
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+                    <Activity className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Recent Activity</h2>
-                    <p className="text-purple-100 text-sm">Latest platform updates</p>
+                    <h2 className="text-2xl font-bold text-white tracking-tight">Recent Activity</h2>
+                    <p className="text-violet-100 text-sm font-medium">Live platform updates</p>
                   </div>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1 border border-white/20">
+                  <div className="text-white text-xs font-medium">Live</div>
                 </div>
               </div>
             </div>
             
-            <div className="p-6">
+            <div className="p-8">
               <RecentActivityFeed activities={recentActivities} />
             </div>
           </div>
 
-          {/* Hiring Statistics */}
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-teal-600 to-green-600 px-6 py-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <Award className="h-6 w-6 text-green-700" />
+          {/* Enhanced Hiring Statistics */}
+          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 px-8 py-6 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-green-500/20"></div>
+              <div className="relative flex items-center space-x-4">
+                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
+                  <Award className="h-7 w-7 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-white">Hiring Performance</h2>
-                  <p className="text-teal-100 text-sm">This month's highlights</p>
+                  <h2 className="text-2xl font-bold text-white tracking-tight">Performance Metrics</h2>
+                  <p className="text-emerald-100 text-sm font-medium">This month's achievements</p>
                 </div>
               </div>
             </div>
             
-            <div className="p-6 space-y-6">
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-8 w-8 text-green-700 drop-shadow-md" />
+            <div className="p-8 space-y-6">
+              <div className="flex items-center justify-between p-6 bg-gradient-to-r from-emerald-50 to-green-100 rounded-2xl border border-emerald-200/50 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center space-x-4">
+                  <div className="w-14 h-14 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <CheckCircle className="h-7 w-7 text-white" />
+                  </div>
                   <div>
-                    <div className="text-lg font-bold text-gray-900">5</div>
-                    <div className="text-sm text-gray-600">Successful Hires</div>
+                    <div className="text-2xl font-bold text-gray-900">5</div>
+                    <div className="text-sm font-semibold text-emerald-700">Successful Hires</div>
                   </div>
                 </div>
-                <Star className="h-6 w-6 text-green-600 drop-shadow-sm" />
+                <Star className="h-6 w-6 text-emerald-600" />
               </div>
               
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-                <div className="flex items-center space-x-3">
-                  <Clock className="h-8 w-8 text-blue-700 drop-shadow-md" />
+              <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-100 rounded-2xl border border-blue-200/50 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center space-x-4">
+                  <div className="w-14 h-14 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Clock className="h-7 w-7 text-white" />
+                  </div>
                   <div>
-                    <div className="text-lg font-bold text-gray-900">12 days</div>
-                    <div className="text-sm text-gray-600">Avg. Time to Hire</div>
+                    <div className="text-2xl font-bold text-gray-900">12 days</div>
+                    <div className="text-sm font-semibold text-blue-700">Avg. Time to Hire</div>
                   </div>
                 </div>
-                <TrendingUp className="h-6 w-6 text-blue-600 drop-shadow-sm" />
+                <TrendingUp className="h-6 w-6 text-blue-600" />
               </div>
               
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-                <div className="flex items-center space-x-3">
-                  <Heart className="h-8 w-8 text-purple-700 drop-shadow-md" />
+              <div className="flex items-center justify-between p-6 bg-gradient-to-r from-violet-50 to-purple-100 rounded-2xl border border-violet-200/50 hover:shadow-lg transition-all duration-300">
+                <div className="flex items-center space-x-4">
+                  <div className="w-14 h-14 bg-violet-500 rounded-xl flex items-center justify-center shadow-lg">
+                    <Heart className="h-7 w-7 text-white" />
+                  </div>
                   <div>
-                    <div className="text-lg font-bold text-gray-900">95%</div>
-                    <div className="text-sm text-gray-600">Candidate Satisfaction</div>
+                    <div className="text-2xl font-bold text-gray-900">95%</div>
+                    <div className="text-sm font-semibold text-violet-700">Candidate Satisfaction</div>
                   </div>
                 </div>
-                <Award className="h-6 w-6 text-purple-600 drop-shadow-sm" />
+                <Award className="h-6 w-6 text-violet-600" />
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

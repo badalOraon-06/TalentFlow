@@ -1,6 +1,7 @@
 export { Dashboard } from './Dashboard';
 export { JobsPage } from './JobsPage';
 export { JobDetail } from './JobDetail';
+export { CandidatesPage } from './CandidatesPage';
 export { CandidateProfile } from './CandidateProfile';
 export { AssessmentsPage } from './AssessmentsPage';
 export { AssessmentTakingPage, AssessmentCompletedPage } from './AssessmentTakingPage';

@@ -1,4 +1,4 @@
-import type { Job, Candidate, Assessment, CandidateTimelineEvent, CandidateStage, Question, AssessmentSection } from '../types';
+import type { Job, Candidate, Assessment, CandidateTimelineEvent, CandidateStage, Question, AssessmentSection, AssessmentResponse } from '../types';
 
 // Sample data arrays
 const jobTitles = [
@@ -463,4 +463,221 @@ export function generateTimelineEvents(candidates: Candidate[]): CandidateTimeli
   });
 
   return events;
+}
+
+// Generate sample notifications
+export function generateNotifications(candidates: Candidate[], jobs: Job[]): any[] {
+  const notifications = [];
+  const now = new Date();
+  
+  // Recent candidate applications (last 24 hours)
+  for (let i = 0; i < Math.min(5, candidates.length); i++) {
+    const candidate = candidates[i];
+    const job = jobs.find(j => j.id === candidate.jobId);
+    notifications.push({
+      id: `notif-application-${candidate.id}`,
+      userId: 'admin',
+      title: 'New Application Received',
+      message: `${candidate.name} applied for ${job?.title || 'a position'}`,
+      type: 'application_received',
+      category: 'candidate',
+      data: {
+        candidateId: candidate.id,
+        jobId: candidate.jobId,
+        candidateName: candidate.name,
+        jobTitle: job?.title
+      },
+      isRead: Math.random() > 0.6, // 40% chance of being read
+      createdAt: new Date(now.getTime() - Math.random() * 24 * 60 * 60 * 1000), // Last 24 hours
+      updatedAt: new Date()
+    });
+  }
+
+  // Interview scheduled notifications
+  for (let i = 0; i < Math.min(3, candidates.length); i++) {
+    const candidate = candidates[i];
+    const job = jobs.find(j => j.id === candidate.jobId);
+    if (candidate.stage === 'screen' || candidate.stage === 'tech') {
+      notifications.push({
+        id: `notif-interview-${candidate.id}`,
+        userId: 'admin',
+        title: 'Interview Scheduled',
+        message: `Interview scheduled with ${candidate.name} for ${job?.title || 'position'}`,
+        type: 'interview_scheduled',
+        category: 'interview',
+        data: {
+          candidateId: candidate.id,
+          jobId: candidate.jobId,
+          candidateName: candidate.name,
+          jobTitle: job?.title,
+          scheduledDate: new Date(now.getTime() + Math.random() * 7 * 24 * 60 * 60 * 1000) // Next 7 days
+        },
+        isRead: Math.random() > 0.7, // 30% chance of being read
+        createdAt: new Date(now.getTime() - Math.random() * 12 * 60 * 60 * 1000), // Last 12 hours
+        updatedAt: new Date()
+      });
+    }
+  }
+
+  // Job posting notifications
+  for (let i = 0; i < Math.min(2, jobs.length); i++) {
+    const job = jobs[i];
+    notifications.push({
+      id: `notif-job-${job.id}`,
+      userId: 'admin',
+      title: 'New Job Posted',
+      message: `${job.title} position has been published`,
+      type: 'job_posted',
+      category: 'job',
+      data: {
+        jobId: job.id,
+        jobTitle: job.title,
+        location: job.location
+      },
+      isRead: Math.random() > 0.5, // 50% chance of being read
+      createdAt: new Date(now.getTime() - Math.random() * 48 * 60 * 60 * 1000), // Last 48 hours
+      updatedAt: new Date()
+    });
+  }
+
+  // Assessment completed notifications
+  for (let i = 0; i < Math.min(4, candidates.length); i++) {
+    const candidate = candidates[i];
+    const job = jobs.find(j => j.id === candidate.jobId);
+    if (candidate.stage === 'tech' || candidate.stage === 'offer') {
+      notifications.push({
+        id: `notif-assessment-${candidate.id}`,
+        userId: 'admin',
+        title: 'Assessment Completed',
+        message: `${candidate.name} completed assessment for ${job?.title || 'position'}`,
+        type: 'assessment_completed',
+        category: 'assessment',
+        data: {
+          candidateId: candidate.id,
+          jobId: candidate.jobId,
+          candidateName: candidate.name,
+          jobTitle: job?.title,
+          score: Math.floor(Math.random() * 40) + 60 // Random score between 60-100
+        },
+        isRead: Math.random() > 0.4, // 60% chance of being read
+        createdAt: new Date(now.getTime() - Math.random() * 36 * 60 * 60 * 1000), // Last 36 hours
+        updatedAt: new Date()
+      });
+    }
+  }
+
+  // System notifications
+  notifications.push({
+    id: 'notif-system-update',
+    userId: 'admin',
+    title: 'System Update Available',
+    message: 'A new system update is available with improved candidate tracking features',
+    type: 'system_update',
+    category: 'system',
+    data: {
+      version: '2.1.0',
+      features: ['Enhanced candidate profiles', 'Improved notifications', 'Better analytics']
+    },
+    isRead: false,
+    createdAt: new Date(now.getTime() - 6 * 60 * 60 * 1000), // 6 hours ago
+    updatedAt: new Date()
+  });
+
+  notifications.push({
+    id: 'notif-deadline-reminder',
+    userId: 'admin',
+    title: 'Application Deadline Reminder',
+    message: 'Several job applications are closing soon',
+    type: 'deadline_reminder',
+    category: 'system',
+    data: {
+      jobsClosingSoon: jobs.slice(0, 3).map(job => ({
+        id: job.id,
+        title: job.title,
+        deadline: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000) // 3 days from now
+      }))
+    },
+    isRead: false,
+    createdAt: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 hours ago
+    updatedAt: new Date()
+  });
+
+  // Sort notifications by creation date (newest first)
+  return notifications.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+}
+
+// Generate assessment responses for testing
+export function generateAssessmentResponses(candidates: Candidate[], assessments: Assessment[]): AssessmentResponse[] {
+  const responses: AssessmentResponse[] = [];
+  
+  // Generate responses for some candidates and assessments
+  assessments.forEach(assessment => {
+    // Randomly select 30-70% of candidates to have submitted responses
+    const responseRate = 0.3 + Math.random() * 0.4;
+    const candidatesWhoResponded = candidates
+      .filter(() => Math.random() < responseRate)
+      .slice(0, Math.floor(candidates.length * responseRate));
+    
+    candidatesWhoResponded.forEach(candidate => {
+      const answers: Record<string, any> = {};
+      
+      // Generate sample answers for each question in the assessment
+      assessment.sections?.forEach(section => {
+        section.questions.forEach(question => {
+          switch (question.type) {
+            case 'single-choice':
+              const singleOptions = (question as any).options || ['Option A', 'Option B', 'Option C'];
+              answers[question.id] = singleOptions[Math.floor(Math.random() * singleOptions.length)];
+              break;
+            case 'multi-choice':
+              const multiOptions = (question as any).options || ['Option A', 'Option B', 'Option C'];
+              const selectedCount = Math.floor(Math.random() * Math.min(3, multiOptions.length)) + 1;
+              answers[question.id] = multiOptions
+                .sort(() => 0.5 - Math.random())
+                .slice(0, selectedCount);
+              break;
+            case 'short-text':
+              const shortResponses = [
+                'Experienced in modern frameworks',
+                'Strong problem-solving skills',
+                'Team collaboration focus',
+                'Continuous learning mindset',
+                'Agile development experience'
+              ];
+              answers[question.id] = shortResponses[Math.floor(Math.random() * shortResponses.length)];
+              break;
+            case 'long-text':
+              const longResponses = [
+                'I have extensive experience working with modern web technologies including React, TypeScript, and Node.js. In my previous role, I led a team of developers in building scalable applications that served thousands of users.',
+                'My approach to problem-solving involves breaking down complex issues into smaller components, researching best practices, and collaborating with team members to find optimal solutions.',
+                'I believe in writing clean, maintainable code and following established coding standards. I have experience with test-driven development and continuous integration practices.',
+                'Throughout my career, I have worked in agile environments, participating in sprint planning, daily standups, and retrospectives. I value clear communication and teamwork.'
+              ];
+              answers[question.id] = longResponses[Math.floor(Math.random() * longResponses.length)];
+              break;
+            case 'numeric':
+              const numericValue = Math.floor(Math.random() * 10) + 1;
+              answers[question.id] = numericValue;
+              break;
+            default:
+              answers[question.id] = 'Sample response';
+          }
+        });
+      });
+      
+      const now = new Date();
+      const submittedTime = new Date(now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000); // Random time in last 30 days
+      
+      responses.push({
+        id: `response-${candidate.id}-${assessment.id}`,
+        candidateId: candidate.id,
+        assessmentId: assessment.id,
+        answers,
+        completedAt: submittedTime,
+        submittedAt: submittedTime
+      });
+    });
+  });
+  
+  return responses;
 }

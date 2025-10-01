@@ -3,19 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   User, 
   LogOut, 
-  Settings, 
-  Shield, 
   ChevronDown, 
   UserCircle,
   Building2,
-  Clock,
+  Shield,
   Mail
 } from 'lucide-react';
-import { useAuth, useAuthPermissions } from '../store/authStore';
+import { useAuth } from '../store/authStore';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
-  const { isAdmin, isHRManager } = useAuthPermissions();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -47,9 +44,6 @@ export function UserMenu() {
   const getRoleDisplayName = (role: string) => {
     const roleNames = {
       admin: 'System Administrator',
-      hr_manager: 'HR Manager',
-      recruiter: 'Recruiter',
-      hiring_manager: 'Hiring Manager',
     };
     return roleNames[role as keyof typeof roleNames] || role;
   };
@@ -57,9 +51,6 @@ export function UserMenu() {
   const getRoleBadgeColor = (role: string) => {
     const roleColors = {
       admin: 'bg-purple-100 text-purple-800 border-purple-200',
-      hr_manager: 'bg-blue-100 text-blue-800 border-blue-200',
-      recruiter: 'bg-green-100 text-green-800 border-green-200',
-      hiring_manager: 'bg-orange-100 text-orange-800 border-orange-200',
     };
     return roleColors[role as keyof typeof roleColors] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
@@ -162,48 +153,11 @@ export function UserMenu() {
               </div>
             </Link>
 
-            {/* Settings (Admin/HR only) */}
-            {(isAdmin || isHRManager) && (
-              <Link
-                to="/settings"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                <Settings className="h-4 w-4 mr-3 text-gray-400" />
-                <div>
-                  <div className="font-medium">Settings</div>
-                  <div className="text-xs text-gray-500">System preferences</div>
-                </div>
-              </Link>
-            )}
 
-            {/* Admin Panel (Admin only) */}
-            {isAdmin && (
-              <Link
-                to="/admin"
-                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                <Shield className="h-4 w-4 mr-3 text-gray-400" />
-                <div>
-                  <div className="font-medium">Admin Panel</div>
-                  <div className="text-xs text-gray-500">Manage users and system</div>
-                </div>
-              </Link>
-            )}
 
-            {/* Activity Log */}
-            <Link
-              to="/activity"
-              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              <Clock className="h-4 w-4 mr-3 text-gray-400" />
-              <div>
-                <div className="font-medium">Activity Log</div>
-                <div className="text-xs text-gray-500">View your recent activity</div>
-              </div>
-            </Link>
+
+
+
           </div>
 
           {/* Divider */}

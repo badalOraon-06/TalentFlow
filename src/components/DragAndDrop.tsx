@@ -9,7 +9,6 @@ import {
   useDroppable,
   useDraggable,
   DragOverlay,
-  closestCorners,
 } from '@dnd-kit/core';
 import type {
   DragEndEvent,
@@ -175,6 +174,7 @@ function SortableJobItem({ job }: SortableJobItemProps) {
 interface KanbanBoardProps {
   candidates: Candidate[];
   onStageChange: (candidateId: string, newStage: CandidateStage) => void;
+  onCandidateClick?: (candidate: Candidate) => void;
   className?: string;
 }
 
@@ -223,14 +223,17 @@ const STAGES: { id: CandidateStage; title: string; color: string; bgColor: strin
   },
 ];
 
-export function KanbanBoard({ candidates, onStageChange, className = '' }: KanbanBoardProps) {
+export function KanbanBoard({ candidates, onStageChange, onCandidateClick, className = '' }: KanbanBoardProps) {
+  console.log('🎯 KanbanBoard rendered with candidates:', candidates.length);
+  console.log('🎯 KanbanBoard candidates:', candidates);
+  
   const [activeCandidate, setActiveCandidate] = React.useState<Candidate | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 3, // Reduced distance for more responsive dragging
+        distance: 5, // Small distance to distinguish from clicks
       },
     }),
     useSensor(KeyboardSensor, {
@@ -240,7 +243,9 @@ export function KanbanBoard({ candidates, onStageChange, className = '' }: Kanba
 
   const handleDragStart = (event: DragStartEvent) => {
     console.log('🎯 Drag started:', event.active.id);
+    console.log('🎯 Drag start event:', event);
     const candidate = candidates.find(c => c.id === event.active.id);
+    console.log('🎯 Found candidate:', candidate);
     setActiveCandidate(candidate || null);
     setIsDragging(true);
   };
@@ -265,17 +270,29 @@ export function KanbanBoard({ candidates, onStageChange, className = '' }: Kanba
       return;
     }
 
-    // The over.id should be the stage id (from DroppableColumn)
-    const newStage = over.id as CandidateStage;
+    // Validate that the over.id is a valid stage
+    const validStages: CandidateStage[] = ['applied', 'screen', 'tech', 'offer', 'hired', 'rejected'];
+    const newStage = over.id as string;
+    
+    if (!validStages.includes(newStage as CandidateStage)) {
+      console.log('❌ Invalid stage:', newStage);
+      return;
+    }
+    
+    const typedNewStage = newStage as CandidateStage;
     
     console.log('🔄 Stage change:', { 
       candidate: activeCandidate.name, 
       from: activeCandidate.stage, 
-      to: newStage 
+      to: typedNewStage 
     });
     
-    if (activeCandidate.stage !== newStage) {
-      onStageChange(activeCandidate.id, newStage);
+    if (activeCandidate.stage !== typedNewStage) {
+      try {
+        onStageChange(activeCandidate.id, typedNewStage);
+      } catch (error) {
+        console.error('❌ Failed to change stage:', error);
+      }
     }
   };
 
@@ -289,7 +306,7 @@ export function KanbanBoard({ candidates, onStageChange, className = '' }: Kanba
     <div className={`${className} bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-3xl shadow-lg`}>
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
@@ -303,7 +320,8 @@ export function KanbanBoard({ candidates, onStageChange, className = '' }: Kanba
         </div>
         
         {/* 3x2 Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* 1 x 6 Kanban Board Layout */}
+        <div className="flex gap-3 overflow-x-auto pb-4" style={{ scrollbarWidth: 'thin' }}>
           {STAGES.map((stage) => (
             <DroppableColumn
               key={stage.id}
@@ -311,6 +329,7 @@ export function KanbanBoard({ candidates, onStageChange, className = '' }: Kanba
               candidates={candidatesByStage[stage.id] || []}
               isDragging={isDragging}
               activeCandidate={activeCandidate}
+              onCandidateClick={onCandidateClick}
             />
           ))}
         </div>
@@ -335,9 +354,10 @@ interface DroppableColumnProps {
   candidates: Candidate[];
   isDragging: boolean;
   activeCandidate: Candidate | null;
+  onCandidateClick?: (candidate: Candidate) => void;
 }
 
-function DroppableColumn({ stage, candidates, isDragging, activeCandidate }: DroppableColumnProps) {
+function DroppableColumn({ stage, candidates, isDragging, activeCandidate, onCandidateClick }: DroppableColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: stage.id,
   });
@@ -346,7 +366,7 @@ function DroppableColumn({ stage, candidates, isDragging, activeCandidate }: Dro
   const showDropHint = isDragging && activeCandidate && activeCandidate.stage !== stage.id;
 
   return (
-    <div className="w-full min-h-[500px] flex flex-col bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
+    <div className="w-64 min-w-64 flex-shrink-0 min-h-[500px] flex flex-col bg-white rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200">
       {/* Enhanced Column Header */}
       <div className={`p-4 bg-gradient-to-r ${stage.bgColor} border-b-2 ${stage.color.split(' ')[2]} transition-all duration-300 ${
         isOver ? 'ring-4 ring-blue-400 ring-offset-2 transform scale-105 shadow-xl' : 'shadow-sm'
@@ -381,7 +401,7 @@ function DroppableColumn({ stage, candidates, isDragging, activeCandidate }: Dro
       >
         <div className="space-y-4">
           {candidates.map((candidate) => (
-            <DraggableCard key={candidate.id} candidate={candidate} />
+            <DraggableCard key={candidate.id} candidate={candidate} onClick={() => onCandidateClick?.(candidate)} />
           ))}
           {candidates.length === 0 && (
             <div className={`
@@ -481,16 +501,20 @@ function DragOverlayCard({ candidate }: DragOverlayCardProps) {
 // Draggable Card (Draggable candidate card)
 interface DraggableCardProps {
   candidate: Candidate;
+  onClick?: () => void;
 }
 
-function DraggableCard({ candidate }: DraggableCardProps) {
+function DraggableCard({ candidate, onClick }: DraggableCardProps) {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     isDragging,
-  } = useDraggable({ id: candidate.id });
+  } = useDraggable({ 
+    id: candidate.id,
+    data: { candidate }
+  });
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -502,8 +526,9 @@ function DraggableCard({ candidate }: DraggableCardProps) {
       style={style}
       {...attributes}
       {...listeners}
+      onClick={onClick}
       className={`
-        bg-white rounded-2xl p-4 border-2 border-gray-200 cursor-grab active:cursor-grabbing group
+        bg-white rounded-2xl p-4 border-2 border-gray-200 cursor-pointer group
         ${
           isDragging 
             ? 'opacity-40 shadow-2xl ring-4 ring-blue-400 scale-105 z-50 border-blue-300' 
@@ -562,9 +587,9 @@ function DraggableCard({ candidate }: DraggableCardProps) {
           </div>
         </div>
         
-        {/* Drag Handle Indicator */}
-        <div className="flex justify-center pt-1">
-          <div className="w-8 h-1 bg-gray-300 rounded-full group-hover:bg-gray-400 transition-colors duration-200"></div>
+        {/* Drag indicator */}
+        <div className="flex justify-center">
+          <div className="w-6 h-1 bg-gray-300 rounded-full opacity-50"></div>
         </div>
       </div>
     </div>

@@ -370,31 +370,8 @@ export const authHandlers = [
     try {
       const credentials = await request.json() as LoginCredentials;
       
-      // Get user from database
-      const user = await dbOperations.getUserByEmail(credentials.email);
-      
-      if (!user) {
-        return HttpResponse.json(
-          { success: false, message: 'Invalid email or password' },
-          { status: 401 }
-        );
-      }
-
-      if (!user.isActive) {
-        return HttpResponse.json(
-          { success: false, message: 'Your account has been deactivated' },
-          { status: 401 }
-        );
-      }
-
-      // For demo purposes, we'll accept any password that matches 'password123'
-      // In production, this would use proper password hashing
-      if (credentials.password !== 'password123') {
-        return HttpResponse.json(
-          { success: false, message: 'Invalid email or password' },
-          { status: 401 }
-        );
-      }
+      // Use the database authenticateUser method which handles stored passwords
+      const user = await dbOperations.authenticateUser(credentials.email, credentials.password);
 
       // Create auth user response (excluding sensitive data)
       const authUser: AuthUser = {
@@ -444,6 +421,7 @@ export const authHandlers = [
         name: signupData.name,
         role: signupData.role,
         department: signupData.department,
+        password: signupData.password, // Store the user's password
         isActive: true,
       });
 
@@ -483,10 +461,95 @@ export const authHandlers = [
   }),
 ];
 
+// Notification handlers
+const notificationHandlers = [
+  // Get notifications
+  http.get('/api/notifications', async ({ request }) => {
+    try {
+      await simulateNetwork();
+      const url = new URL(request.url);
+      const limit = Number(url.searchParams.get('limit')) || 20;
+      const offset = Number(url.searchParams.get('offset')) || 0;
+      const read = url.searchParams.get('read');
+      const category = url.searchParams.get('category');
+      const type = url.searchParams.get('type');
+
+      const filters: any = { userId: 'admin' }; // Default to admin user
+      if (read !== null) filters.read = read === 'true';
+      if (category) filters.category = category;
+      if (type) filters.type = type;
+
+      const result = await dbOperations.getNotifications(filters, { limit, offset });
+      return HttpResponse.json({ success: true, data: result });
+    } catch (error) {
+      return handleError(error, 'Failed to fetch notifications');
+    }
+  }),
+
+  // Create notification
+  http.post('/api/notifications', async ({ request }) => {
+    try {
+      await simulateNetwork();
+      const data = await request.json() as any;
+      const result = await dbOperations.createNotification(data);
+      return HttpResponse.json({ success: true, data: result });
+    } catch (error) {
+      return handleError(error, 'Failed to create notification');
+    }
+  }),
+
+  // Mark notification as read
+  http.patch('/api/notifications/:id/read', async ({ params }) => {
+    try {
+      await simulateNetwork();
+      const id = String(params.id);
+      await dbOperations.markNotificationAsRead(id);
+      return HttpResponse.json({ success: true, message: 'Notification marked as read' });
+    } catch (error) {
+      return handleError(error, 'Failed to mark notification as read');
+    }
+  }),
+
+  // Delete notification
+  http.delete('/api/notifications/:id', async ({ params }) => {
+    try {
+      await simulateNetwork();
+      const id = String(params.id);
+      await dbOperations.deleteNotification(id);
+      return HttpResponse.json({ success: true, message: 'Notification deleted' });
+    } catch (error) {
+      return handleError(error, 'Failed to delete notification');
+    }
+  }),
+
+  // Get notification stats
+  http.get('/api/notifications/stats', async () => {
+    try {
+      await simulateNetwork();
+      const stats = await dbOperations.getNotificationStats('admin'); // Using default admin user
+      return HttpResponse.json({ success: true, data: stats });
+    } catch (error) {
+      return handleError(error, 'Failed to fetch notification stats');
+    }
+  }),
+
+  // Mark all notifications as read
+  http.patch('/api/notifications/mark-all-read', async () => {
+    try {
+      await simulateNetwork();
+      await dbOperations.markAllNotificationsAsRead('admin'); // Using default admin user
+      return HttpResponse.json({ success: true, message: 'All notifications marked as read' });
+    } catch (error) {
+      return handleError(error, 'Failed to mark all notifications as read');
+    }
+  }),
+];
+
 // Combine all handlers
 export const handlers = [
   ...jobHandlers,
   ...candidateHandlers,
   ...assessmentHandlers,
   ...authHandlers,
+  ...notificationHandlers,
 ];

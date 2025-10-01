@@ -30,39 +30,6 @@ const rolePermissions: Record<UserRole, RolePermissions> = {
     canViewReports: true,
     canAccessAdminPanel: true,
   },
-  hr_manager: {
-    canManageUsers: false,
-    canCreateJobs: true,
-    canEditJobs: true,
-    canDeleteJobs: true,
-    canManageCandidates: true,
-    canViewAllCandidates: true,
-    canCreateAssessments: true,
-    canViewReports: true,
-    canAccessAdminPanel: false,
-  },
-  recruiter: {
-    canManageUsers: false,
-    canCreateJobs: false,
-    canEditJobs: false,
-    canDeleteJobs: false,
-    canManageCandidates: true,
-    canViewAllCandidates: true,
-    canCreateAssessments: false,
-    canViewReports: false,
-    canAccessAdminPanel: false,
-  },
-  hiring_manager: {
-    canManageUsers: false,
-    canCreateJobs: false,
-    canEditJobs: false,
-    canDeleteJobs: false,
-    canManageCandidates: false,
-    canViewAllCandidates: false,
-    canCreateAssessments: false,
-    canViewReports: false,
-    canAccessAdminPanel: false,
-  },
 };
 
 export const useAuthStore = create<AuthStore>()(
@@ -342,9 +309,6 @@ export const useAuthPermissions = () => {
     isRole,
     user,
     isAdmin: isRole('admin'),
-    isHRManager: isRole('hr_manager'),
-    isRecruiter: isRole('recruiter'),
-    isHiringManager: isRole('hiring_manager'),
   };
 };
 

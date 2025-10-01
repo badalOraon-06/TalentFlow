@@ -8,6 +8,7 @@ import {
 import { Modal } from './Modal';
 import { Button } from './Button';
 import { useJobs, useCreateCandidate } from '../hooks/useApiDirect';
+import { useSimpleToast } from './SimpleToast';
 import type { Job, ExperienceLevel } from '../types';
 
 interface AddCandidateModalEnhancedProps {
@@ -35,6 +36,7 @@ const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR'];
 
 export function AddCandidateModalEnhanced({ isOpen, onClose, onSuccess }: AddCandidateModalEnhancedProps) {
   const [activeTab, setActiveTab] = useState('basic');
+  const { showToast } = useSimpleToast();
   const [formData, setFormData] = useState({
     // Basic Information
     name: '',
@@ -256,11 +258,14 @@ export function AddCandidateModalEnhanced({ isOpen, onClose, onSuccess }: AddCan
       await createCandidate(candidateData);
 
       // Success - close modal and notify parent
+      showToast(`Candidate "${candidateData.name}" added successfully`, 'success');
+      
       onClose();
       onSuccess();
     } catch (err) {
       // Error is already handled by the hook
       console.error('Failed to create candidate:', err);
+      showToast('Failed to add candidate', 'error');
     }
   };
 

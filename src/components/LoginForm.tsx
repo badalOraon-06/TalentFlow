@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, Mail, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../store/authStore';
 
@@ -131,36 +131,31 @@ export function LoginForm() {
 
         {/* Demo Accounts */}
         <div className="mt-8 pt-6 border-t border-gray-200">
-          <h3 className="text-sm font-medium text-gray-700 mb-3">Demo Accounts</h3>
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Demo Account</h3>
           <div className="grid grid-cols-1 gap-2">
             <button
               type="button"
-              onClick={() => handleDemoLogin('admin@talentflow.com', 'password123')}
+              onClick={() => handleDemoLogin('admin@talentflow.com', 'admin123')}
               disabled={isLoading}
               className="w-full text-left px-3 py-2 text-xs bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 disabled:opacity-50"
             >
               <span className="font-medium text-purple-600">Admin:</span>
               <span className="text-gray-600 ml-1">admin@talentflow.com</span>
             </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('hr@talentflow.com', 'password123')}
-              disabled={isLoading}
-              className="w-full text-left px-3 py-2 text-xs bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 disabled:opacity-50"
-            >
-              <span className="font-medium text-blue-600">HR Manager:</span>
-              <span className="text-gray-600 ml-1">hr@talentflow.com</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleDemoLogin('recruiter@talentflow.com', 'password123')}
-              disabled={isLoading}
-              className="w-full text-left px-3 py-2 text-xs bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 disabled:opacity-50"
-            >
-              <span className="font-medium text-green-600">Recruiter:</span>
-              <span className="text-gray-600 ml-1">recruiter@talentflow.com</span>
-            </button>
           </div>
+        </div>
+
+        {/* Sign Up Link */}
+        <div className="text-center mt-6">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Link
+              to="/signup"
+              className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+            >
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
     </div>

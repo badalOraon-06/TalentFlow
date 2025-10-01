@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Plus, ArrowLeft, FileText, Building2, Target, BarChart3, Users, Award } from 'lucide-react';
 import { useJobs } from '../hooks/useApiDirect';
-import { useAssessments, useSaveAssessment } from '../hooks/useApiDirect';
+import { useAssessments, useSaveAssessment, useAllAssessments, useDatabaseStats } from '../hooks/useApiDirect';
 import type { Job, Assessment } from '../types';
 import { Button, AssessmentBuilder } from '../components';
+import { useSimpleToast } from '../components/SimpleToast';
 
 export function AssessmentsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,6 +20,10 @@ export function AssessmentsPage() {
     status: 'active'
   });
 
+  // Get all assessments count and database stats
+  const { data: allAssessments } = useAllAssessments();
+  const { data: dbStats } = useDatabaseStats();
+
   // Debug logging
   useEffect(() => {
     console.log('🔍 AssessmentsPage Debug:', {
@@ -26,9 +31,11 @@ export function AssessmentsPage() {
       jobsError,
       jobsData,
       jobsCount: jobsData?.jobs?.length,
-      selectedJobId
+      selectedJobId,
+      allAssessments: allAssessments?.length,
+      dbStats
     });
-  }, [jobsLoading, jobsError, jobsData, selectedJobId]);
+  }, [jobsLoading, jobsError, jobsData, selectedJobId, allAssessments, dbStats]);
 
   // Fetch assessments for selected job
   const { data: assessments, loading: assessmentsLoading } = useAssessments(selectedJobId || undefined);
@@ -106,7 +113,7 @@ export function AssessmentsPage() {
                       <Building2 className="h-7 w-7 text-emerald-200 group-hover:text-emerald-100 transition-colors" />
                     </div>
                     <div>
-                      <div className="text-3xl font-bold text-white drop-shadow-lg">{jobsData?.jobs?.length || 0}</div>
+                      <div className="text-3xl font-bold text-white drop-shadow-lg">{dbStats?.jobs || jobsData?.jobs?.length || 0}</div>
                       <div className="text-emerald-100 text-sm font-semibold uppercase tracking-wider">Active Jobs</div>
                     </div>
                   </div>
@@ -118,7 +125,7 @@ export function AssessmentsPage() {
                       <FileText className="h-7 w-7 text-amber-200 group-hover:text-amber-100 transition-colors" />
                     </div>
                     <div>
-                      <div className="text-3xl font-bold text-white drop-shadow-lg">0</div>
+                      <div className="text-3xl font-bold text-white drop-shadow-lg">{dbStats?.assessments || 0}</div>
                       <div className="text-amber-100 text-sm font-semibold uppercase tracking-wider">Assessments Created</div>
                     </div>
                   </div>
@@ -130,7 +137,7 @@ export function AssessmentsPage() {
                       <BarChart3 className="h-7 w-7 text-rose-200 group-hover:text-rose-100 transition-colors" />
                     </div>
                     <div>
-                      <div className="text-3xl font-bold text-white drop-shadow-lg">0</div>
+                      <div className="text-3xl font-bold text-white drop-shadow-lg">{dbStats?.responses || 0}</div>
                       <div className="text-rose-100 text-sm font-semibold uppercase tracking-wider">Responses Collected</div>
                     </div>
                   </div>
@@ -312,13 +319,22 @@ interface AssessmentBuilderViewProps {
 
 function AssessmentBuilderView({ job, assessment }: AssessmentBuilderViewProps) {
   const { saveAssessment } = useSaveAssessment();
+  const { showToast } = useSimpleToast();
 
   const handleSaveAssessment = async (assessmentData: Omit<Assessment, 'id' | 'createdAt' | 'updatedAt'>) => {
+    // Validate required fields
+    if (!assessmentData.title || !assessmentData.jobId) {
+      showToast('Please provide a title for the assessment.', 'error');
+      return;
+    }
+
     try {
       await saveAssessment(job.id, assessmentData);
+      showToast(`Assessment for "${job.title}" saved successfully!`, 'success');
       // Optionally refresh the assessments data here
     } catch (error) {
       console.error('Failed to save assessment:', error);
+      showToast('Failed to save assessment. Please try again.', 'error');
       throw error; // Let the AssessmentBuilder handle the error display
     }
   };

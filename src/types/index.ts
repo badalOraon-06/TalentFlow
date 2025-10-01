@@ -357,7 +357,7 @@ export interface ModalState {
 }
 
 // User and Authentication types
-export type UserRole = 'admin' | 'hr_manager' | 'recruiter' | 'hiring_manager';
+export type UserRole = 'admin';
 
 export interface User {
   id: string;
@@ -366,6 +366,7 @@ export interface User {
   role: UserRole;
   avatar?: string;
   department?: string;
+  password: string; // Store password for demo purposes
   isActive: boolean;
   lastLoginAt?: Date;
   createdAt: Date;
@@ -441,3 +442,6 @@ export type DeepPartial<T> = {
 export type RequireAtLeastOne<T> = {
   [K in keyof T]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<keyof T, K>>>;
 }[keyof T];
+
+// Notification Types
+export * from './notification';

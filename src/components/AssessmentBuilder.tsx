@@ -110,7 +110,6 @@ export function AssessmentBuilder({ job, assessment, onSave, showPreview = true 
 
   const handleSave = async () => {
     if (!currentAssessment.title || !currentAssessment.jobId) {
-      alert('Please provide a title for the assessment');
       return;
     }
 
@@ -123,9 +122,12 @@ export function AssessmentBuilder({ job, assessment, onSave, showPreview = true 
         sections: currentAssessment.sections || []
       });
       setHasUnsavedChanges(false);
+      
+      // Success will be handled by parent component
     } catch (error) {
       console.error('Failed to save assessment:', error);
-      alert('Failed to save assessment. Please try again.');
+      // Error will be handled by parent component
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -164,7 +166,7 @@ export function AssessmentBuilder({ job, assessment, onSave, showPreview = true 
                 className="bg-white hover:bg-gray-50 border-gray-300 shadow-sm transition-all duration-200"
               >
                 <Eye className="h-4 w-4 mr-2" />
-                {showLivePreview ? 'Hide Preview' : 'Show Preview'}
+                {showLivePreview ? 'Back to Editor' : 'Show Preview'}
               </Button>
               
               <Button
@@ -196,98 +198,100 @@ export function AssessmentBuilder({ job, assessment, onSave, showPreview = true 
       </div>
 
       {/* Main Content Grid */}
-      <div className={`max-w-7xl mx-auto px-6 grid gap-8 ${showLivePreview ? 'grid-cols-1 xl:grid-cols-2' : 'grid-cols-1'}`}>
-        {/* Builder Panel */}
-        <div className="space-y-8">
-          {/* Enhanced Assessment Details Card */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4">
-              <h2 className="text-xl font-semibold text-white flex items-center">
-                <Play className="h-5 w-5 mr-3" />
-                Assessment Details
-              </h2>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-1 gap-6">
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Builder Panel - Only show when preview is hidden */}
+        {!showLivePreview && (
+          <div className="space-y-8">
+            {/* Enhanced Assessment Details Card */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-4">
+                <h2 className="text-xl font-semibold text-white flex items-center">
+                  <Play className="h-5 w-5 mr-3" />
+                  Assessment Details
+                </h2>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                <div className="grid grid-cols-1 gap-6">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Assessment Title
+                    </label>
+                    <input
+                      type="text"
+                      value={currentAssessment.title || ''}
+                      onChange={(e) => handleAssessmentUpdate('title', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
+                      placeholder="Enter assessment title..."
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    Assessment Title
+                    Description & Instructions
                   </label>
-                  <input
-                    type="text"
-                    value={currentAssessment.title || ''}
-                    onChange={(e) => handleAssessmentUpdate('title', e.target.value)}
+                  <textarea
+                    value={currentAssessment.description || ''}
+                    onChange={(e) => handleAssessmentUpdate('description', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
-                    placeholder="Enter assessment title..."
+                    rows={4}
+                    placeholder="Describe the assessment and provide instructions to candidates..."
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Description & Instructions
-                </label>
-                <textarea
-                  value={currentAssessment.description || ''}
-                  onChange={(e) => handleAssessmentUpdate('description', e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-gray-50 hover:bg-white"
-                  rows={4}
-                  placeholder="Describe the assessment and provide instructions to candidates..."
-                />
-              </div>
-
-              {/* Enhanced Statistics Bar */}
-              <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium text-gray-700">
-                    Assessment Progress
-                  </div>
-                  <div className="flex items-center space-x-6 text-sm">
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                      <span className="text-gray-600">{currentAssessment.sections?.length || 0} sections</span>
+                {/* Enhanced Statistics Bar */}
+                <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium text-gray-700">
+                      Assessment Progress
                     </div>
-                    <div className="flex items-center">
-                      <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                      <span className="text-gray-600">{totalQuestions} questions</span>
+                    <div className="flex items-center space-x-6 text-sm">
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                        <span className="text-gray-600">{currentAssessment.sections?.length || 0} sections</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                        <span className="text-gray-600">{totalQuestions} questions</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Sections */}
-          <div className="space-y-4">
-            {currentAssessment.sections?.map((section, index) => (
-              <SectionBuilder
-                key={section.id}
-                section={section}
-                onUpdate={(updatedSection) => handleSectionUpdate(index, updatedSection)}
-                onDelete={() => handleSectionDelete(index)}
-                onDuplicate={() => handleSectionDuplicate(index)}
-              />
-            ))}
+            {/* Sections */}
+            <div className="space-y-4">
+              {currentAssessment.sections?.map((section, index) => (
+                <SectionBuilder
+                  key={section.id}
+                  section={section}
+                  onUpdate={(updatedSection) => handleSectionUpdate(index, updatedSection)}
+                  onDelete={() => handleSectionDelete(index)}
+                  onDuplicate={() => handleSectionDuplicate(index)}
+                />
+              ))}
 
-            <NewSectionButton onAddSection={handleSectionAdd} />
+              <NewSectionButton onAddSection={handleSectionAdd} />
 
-            {(!currentAssessment.sections || currentAssessment.sections.length === 0) && (
-              <div className="text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
-                <div className="text-gray-500">
-                  <Play className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Start Building Your Assessment</h3>
-                  <p className="text-sm mb-4">
-                    Create sections to organize your questions by topic or skill area.
-                  </p>
-                  <NewSectionButton onAddSection={handleSectionAdd} />
+              {(!currentAssessment.sections || currentAssessment.sections.length === 0) && (
+                <div className="text-center py-12 bg-white rounded-lg border border-dashed border-gray-300">
+                  <div className="text-gray-500">
+                    <Play className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Start Building Your Assessment</h3>
+                    <p className="text-sm mb-4">
+                      Create sections to organize your questions by topic or skill area.
+                    </p>
+                    <NewSectionButton onAddSection={handleSectionAdd} />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Enhanced Live Preview Panel */}
+        {/* Enhanced Live Preview Panel - Only show when preview is enabled */}
         {showLivePreview && (
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">

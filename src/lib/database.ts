@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Job, Candidate, Assessment, CandidateTimelineEvent, AssessmentResponse, User } from '../types';
+import type { Job, Candidate, Assessment, CandidateTimelineEvent, AssessmentResponse, User, Notification } from '../types';
 
 export class TalentFlowDatabase extends Dexie {
   jobs!: Table<Job>;
@@ -8,10 +8,34 @@ export class TalentFlowDatabase extends Dexie {
   candidateTimeline!: Table<CandidateTimelineEvent>;
   assessmentResponses!: Table<AssessmentResponse>;
   users!: Table<User>;
+  notifications!: Table<Notification>;
 
   constructor() {
     super('TalentFlowDatabase');
     
+    // Version 4: Added slug index to jobs table
+    this.version(4).stores({
+      jobs: 'id, title, slug, status, createdAt, order',
+      candidates: 'id, name, email, jobId, stage, appliedAt',
+      assessments: 'id, jobId, title, createdAt',
+      candidateTimeline: 'id, candidateId, type, createdAt',
+      assessmentResponses: 'id, candidateId, assessmentId, submittedAt',
+      users: 'id, email, role, isActive, createdAt',
+      notifications: 'id, userId, type, category, isRead, createdAt'
+    });
+    
+    // Version 3: Added notifications table
+    this.version(3).stores({
+      jobs: 'id, title, status, createdAt, order',
+      candidates: 'id, name, email, jobId, stage, appliedAt',
+      assessments: 'id, jobId, title, createdAt',
+      candidateTimeline: 'id, candidateId, type, createdAt',
+      assessmentResponses: 'id, candidateId, assessmentId, submittedAt',
+      users: 'id, email, role, isActive, createdAt',
+      notifications: 'id, userId, type, category, isRead, createdAt'
+    });
+
+    // Keep previous version for migration
     this.version(2).stores({
       jobs: 'id, title, status, createdAt, order',
       candidates: 'id, name, email, jobId, stage, appliedAt',
@@ -25,6 +49,68 @@ export class TalentFlowDatabase extends Dexie {
 
 // Create database instance
 export const db = new TalentFlowDatabase();
+
+// Database reset function for development
+export async function resetDatabase() {
+  try {
+    await db.delete();
+    await db.open();
+    console.log('🔄 Database reset successfully');
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to reset database:', error);
+    return false;
+  }
+}
+
+// Debug utility for development
+export const dbDebug = {
+  async info() {
+    try {
+      const jobCount = await db.jobs.count();
+      const candidateCount = await db.candidates.count();
+      const userCount = await db.users.count();
+      const assessmentCount = await db.assessments.count();
+      
+      console.log('📊 Database Info:', {
+        jobs: jobCount,
+        candidates: candidateCount,
+        users: userCount,
+        assessments: assessmentCount,
+        version: db.verno
+      });
+      
+      return { jobCount, candidateCount, userCount, assessmentCount, version: db.verno };
+    } catch (error) {
+      console.error('❌ Failed to get database info:', error);
+      return null;
+    }
+  },
+  
+  async reset() {
+    const confirm = window.confirm('Are you sure you want to reset the database? This will delete all data.');
+    if (confirm) {
+      return await resetDatabase();
+    }
+    return false;
+  },
+  
+  async testSlugIndex() {
+    try {
+      await db.jobs.where('slug').equals('test-slug').first();
+      console.log('✅ Slug index is working correctly');
+      return true;
+    } catch (error) {
+      console.error('❌ Slug index test failed:', error);
+      return false;
+    }
+  }
+};
+
+// Make debug utility available in development
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
+  (window as any).dbDebug = dbDebug;
+}
 
 // Database initialization and seeding
 export async function initializeDatabase() {
@@ -86,16 +172,18 @@ export async function initializeDatabase() {
 // Seed the database with sample data
 async function seedDatabase() {
   try {
-    const { generateJobs, generateCandidates, generateAssessments, generateTimelineEvents } = await import('./seedData');
+    const { generateJobs, generateCandidates, generateAssessments, generateTimelineEvents, generateNotifications, generateAssessmentResponses } = await import('./seedData');
     
     // Generate seed data
     const jobs = generateJobs(25);
     const candidates = generateCandidates(1000, jobs);
     const assessments = generateAssessments(jobs);
+    const assessmentResponses = generateAssessmentResponses(candidates, assessments);
     const timelineEvents = generateTimelineEvents(candidates);
+    const notifications = generateNotifications(candidates, jobs);
     
     // Insert data into database with error handling
-    await db.transaction('rw', db.jobs, db.candidates, db.assessments, db.candidateTimeline, async () => {
+    await db.transaction('rw', [db.jobs, db.candidates, db.assessments, db.assessmentResponses, db.candidateTimeline, db.notifications], async () => {
       try {
         await db.jobs.bulkAdd(jobs);
       } catch (error) {
@@ -136,6 +224,19 @@ async function seedDatabase() {
       }
 
       try {
+        await db.assessmentResponses.bulkAdd(assessmentResponses);
+      } catch (error) {
+        console.warn('⚠️ Some assessment responses may already exist, adding individually...');
+        for (const response of assessmentResponses) {
+          try {
+            await db.assessmentResponses.add(response);
+          } catch (responseError) {
+            // Assessment response already exists, skip
+          }
+        }
+      }
+
+      try {
         await db.candidateTimeline.bulkAdd(timelineEvents);
       } catch (error) {
         console.warn('⚠️ Some timeline events may already exist, adding individually...');
@@ -144,6 +245,19 @@ async function seedDatabase() {
             await db.candidateTimeline.add(event);
           } catch (eventError) {
             // Timeline event already exists, skip
+          }
+        }
+      }
+
+      try {
+        await db.notifications.bulkAdd(notifications);
+      } catch (error) {
+        console.warn('⚠️ Some notifications may already exist, adding individually...');
+        for (const notification of notifications) {
+          try {
+            await db.notifications.add(notification);
+          } catch (notificationError) {
+            // Notification already exists, skip
           }
         }
       }
@@ -163,36 +277,7 @@ async function seedUsers() {
       name: 'System Administrator',
       role: 'admin',
       department: 'IT',
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: 'user-hr-001',
-      email: 'hr@talentflow.com',
-      name: 'HR Manager',
-      role: 'hr_manager',
-      department: 'Human Resources',
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: 'user-recruiter-001',
-      email: 'recruiter@talentflow.com',
-      name: 'Senior Recruiter',
-      role: 'recruiter',
-      department: 'Human Resources',
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-    {
-      id: 'user-hiring-001',
-      email: 'hiring@talentflow.com',
-      name: 'Hiring Manager',
-      role: 'hiring_manager',
-      department: 'Engineering',
+      password: 'admin123',
       isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -227,6 +312,7 @@ async function createEmergencyAdmin() {
     name: 'Emergency Admin',
     role: 'admin',
     department: 'System',
+    password: 'admin123',
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -245,10 +331,7 @@ async function createEmergencyAdmin() {
 // Ensure default users exist (called when database already has users)
 async function ensureDefaultUsers() {
   const requiredUsers = [
-    'admin@talentflow.com',
-    'hr@talentflow.com', 
-    'recruiter@talentflow.com',
-    'hiring@talentflow.com'
+    'admin@talentflow.com'
   ];
 
   for (const email of requiredUsers) {
@@ -316,37 +399,55 @@ export const dbOperations = {
   },
 
   async createJob(jobData: Omit<Job, 'id' | 'createdAt' | 'updatedAt' | 'order'>) {
-    // Check for unique slug
-    const existingJob = await db.jobs.where('slug').equals(jobData.slug).first();
-    if (existingJob) {
-      throw new Error(`A job with slug "${jobData.slug}" already exists`);
+    try {
+      // Check for unique slug if slug is provided
+      if (jobData.slug) {
+        const existingJob = await db.jobs.where('slug').equals(jobData.slug).first();
+        if (existingJob) {
+          throw new Error(`A job with slug "${jobData.slug}" already exists`);
+        }
+      }
+      
+      const maxOrder = await db.jobs.orderBy('order').reverse().first();
+      const job: Job = {
+        ...jobData,
+        id: crypto.randomUUID(),
+        order: (maxOrder?.order || 0) + 1,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      await db.jobs.add(job);
+      return job;
+    } catch (error) {
+      console.error('Error creating job:', error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to create job');
     }
-    
-    const maxOrder = await db.jobs.orderBy('order').reverse().first();
-    const job: Job = {
-      ...jobData,
-      id: crypto.randomUUID(),
-      order: (maxOrder?.order || 0) + 1,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    await db.jobs.add(job);
-    return job;
   },
 
   async updateJob(id: string, updates: Partial<Job>) {
-    // Check for unique slug if slug is being updated
-    if (updates.slug) {
-      const existingJob = await db.jobs.where('slug').equals(updates.slug).first();
-      if (existingJob && existingJob.id !== id) {
-        throw new Error(`A job with slug "${updates.slug}" already exists`);
+    try {
+      // Check for unique slug if slug is being updated
+      if (updates.slug) {
+        const existingJob = await db.jobs.where('slug').equals(updates.slug).first();
+        if (existingJob && existingJob.id !== id) {
+          throw new Error(`A job with slug "${updates.slug}" already exists`);
+        }
       }
+      
+      const updated = { ...updates, updatedAt: new Date() };
+      await db.jobs.update(id, updated);
+      return await db.jobs.get(id);
+    } catch (error) {
+      console.error('Error updating job:', error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Failed to update job');
     }
-    
-    const updated = { ...updates, updatedAt: new Date() };
-    await db.jobs.update(id, updated);
-    return await db.jobs.get(id);
   },
 
   async deleteJob(id: string) {
@@ -589,7 +690,7 @@ export const dbOperations = {
     return await db.users.where('email').equals(email).first();
   },
 
-  async createUser(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) {
+  async createUser(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'> & { password: string }) {
     // Check for unique email
     const existingUser = await db.users.where('email').equals(userData.email).first();
     if (existingUser) {
@@ -660,16 +761,12 @@ export const dbOperations = {
       throw new Error('User account is deactivated');
     }
     
-    // Simple password check for demo (normally you'd hash and compare)
-    // Default passwords: admin123, hr123, recruiter123, hiring123
-    const defaultPasswords: Record<string, string> = {
-      'admin@talentflow.com': 'admin123',
-      'hr@talentflow.com': 'hr123',
-      'recruiter@talentflow.com': 'recruiter123',
-      'hiring@talentflow.com': 'hiring123',
-    };
-    
-    const expectedPassword = defaultPasswords[email] || 'password123';
+    // Check stored password vs provided password
+    // For demo admin account, use default password if no password is stored
+    let expectedPassword = user.password;
+    if (email === 'admin@talentflow.com' && !user.password) {
+      expectedPassword = 'admin123';
+    }
     
     if (password !== expectedPassword) {
       throw new Error('Invalid credentials');
@@ -679,5 +776,160 @@ export const dbOperations = {
     await this.updateUserLastLogin(user.id);
     
     return user;
+  },
+
+  // Notification Operations
+  async getNotifications(filters?: {
+    userId?: string;
+    category?: string;
+    type?: string;
+    read?: boolean;
+  }, options?: {
+    limit?: number;
+    offset?: number;
+  }) {
+    try {
+      let collection = db.notifications.orderBy('createdAt');
+      let notifications = await collection.reverse().toArray();
+      
+      // Apply filters
+      if (filters?.userId) {
+        notifications = notifications.filter(n => n.userId === filters.userId);
+      }
+      
+      if (filters?.category) {
+        notifications = notifications.filter(n => n.category === filters.category);
+      }
+      
+      if (filters?.type) {
+        notifications = notifications.filter(n => n.type === filters.type);
+      }
+      
+      if (filters?.read !== undefined) {
+        notifications = notifications.filter(n => n.isRead === filters.read);
+      }
+    
+      // Apply pagination
+      if (options?.offset) {
+        notifications = notifications.slice(options.offset);
+      }
+      
+      if (options?.limit) {
+        notifications = notifications.slice(0, options.limit);
+      }
+      
+      return notifications;
+    } catch (error) {
+      console.error('Database error in getNotifications:', error);
+      throw error;
+    }
+  },
+
+  async getNotificationById(id: string) {
+    return await db.notifications.get(id);
+  },
+
+  async createNotification(notification: Omit<Notification, 'id' | 'createdAt'>) {
+    const newNotification: Notification = {
+      ...notification,
+      id: `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date(),
+    };
+
+    await db.notifications.add(newNotification);
+    return newNotification;
+  },
+
+  async markNotificationAsRead(id: string) {
+    await db.notifications.update(id, { isRead: true });
+    return await db.notifications.get(id);
+  },
+
+  async markAllNotificationsAsRead(userId: string) {
+    const notifications = await db.notifications.where('userId').equals(userId).toArray();
+    const unreadIds = notifications.filter(n => !n.isRead).map(n => n.id);
+    
+    for (const id of unreadIds) {
+      await db.notifications.update(id, { isRead: true });
+    }
+    
+    return unreadIds.length;
+  },
+
+  async deleteNotification(id: string) {
+    await db.notifications.delete(id);
+  },
+
+  async deleteAllNotifications(userId: string) {
+    await db.notifications.where('userId').equals(userId).delete();
+  },
+
+  async getNotificationCount(userId: string, isRead?: boolean) {
+    let query = db.notifications.where('userId').equals(userId);
+    
+    if (isRead !== undefined) {
+      query = query.and(n => n.isRead === isRead);
+    }
+    
+    return await query.count();
+  },
+
+  async getNotificationStats(userId: string) {
+    const allNotifications = await db.notifications.where('userId').equals(userId).toArray();
+    
+    const stats = {
+      total: allNotifications.length,
+      unread: allNotifications.filter(n => !n.isRead).length,
+      byCategory: {
+        candidate: 0,
+        job: 0,
+        assessment: 0,
+        system: 0,
+        user: 0,
+      },
+      byType: {
+        info: 0,
+        success: 0,
+        warning: 0,
+        error: 0,
+      },
+    };
+
+    allNotifications.forEach(notification => {
+      stats.byCategory[notification.category]++;
+      stats.byType[notification.type]++;
+    });
+
+    return stats;
+  },
+
+  // Database statistics
+  async getDatabaseStats() {
+    try {
+      const jobCount = await db.jobs.count();
+      const candidateCount = await db.candidates.count();
+      const userCount = await db.users.count();
+      const assessmentCount = await db.assessments.count();
+      const responseCount = await db.assessmentResponses.count();
+      
+      return {
+        jobs: jobCount,
+        candidates: candidateCount,
+        users: userCount,
+        assessments: assessmentCount,
+        responses: responseCount,
+        version: db.verno
+      };
+    } catch (error) {
+      console.error('❌ Failed to get database stats:', error);
+      return {
+        jobs: 0,
+        candidates: 0,
+        users: 0,
+        assessments: 0,
+        responses: 0,
+        version: 0
+      };
+    }
   }
 };

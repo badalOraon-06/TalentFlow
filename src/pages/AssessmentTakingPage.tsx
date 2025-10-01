@@ -5,6 +5,7 @@ import { useAssessments } from '../hooks/useApiDirect';
 import type { Assessment, AssessmentResponse } from '../types';
 import { Button } from '../components/Button';
 import { AssessmentPreview } from '../components/AssessmentPreview';
+import { useSimpleToast } from '../components/SimpleToast';
 
 export function AssessmentTakingPage() {
   const { jobId, candidateId } = useParams<{ jobId: string; candidateId: string }>();
@@ -12,6 +13,7 @@ export function AssessmentTakingPage() {
   const { data: assessments, loading } = useAssessments(jobId);
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showToast } = useSimpleToast();
 
   useEffect(() => {
     if (assessments && assessments.length > 0) {
@@ -33,12 +35,15 @@ export function AssessmentTakingPage() {
         submittedAt: new Date()
       });
 
+      showToast('Your assessment has been submitted successfully!', 'success');
+
       // Redirect to confirmation page or candidate profile
       navigate(`/candidates/${candidateId}`, {
         state: { message: 'Assessment submitted successfully!' }
       });
     } catch (error) {
       console.error('Failed to submit assessment:', error);
+      showToast('Failed to submit assessment. Please try again.', 'error');
       throw error;
     } finally {
       setIsSubmitting(false);

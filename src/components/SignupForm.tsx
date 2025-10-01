@@ -5,7 +5,6 @@ import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2, Mail, Lock, User, Building2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../store/authStore';
-import type { UserRole } from '../types';
 
 // Password strength validation
 const passwordSchema = z
@@ -32,7 +31,7 @@ const signupSchema = z
       .max(100, 'Email must be less than 100 characters'),
     password: passwordSchema,
     confirmPassword: z.string().min(1, 'Please confirm your password'),
-    role: z.enum(['admin', 'hr_manager', 'recruiter', 'hiring_manager'], {
+    role: z.enum(['admin'], {
       message: 'Please select a role',
     }),
     department: z.string().optional(),
@@ -50,29 +49,6 @@ type SignupFormData = z.infer<typeof signupSchema>;
 interface SignupFormProps {
   onSuccess?: () => void;
 }
-
-const roleOptions: { value: UserRole; label: string; description: string }[] = [
-  {
-    value: 'admin',
-    label: 'System Administrator',
-    description: 'Full access to all features and user management',
-  },
-  {
-    value: 'hr_manager',
-    label: 'HR Manager',
-    description: 'Manage jobs, candidates, assessments, and view reports',
-  },
-  {
-    value: 'recruiter',
-    label: 'Recruiter',
-    description: 'Manage candidates and their pipeline stages',
-  },
-  {
-    value: 'hiring_manager',
-    label: 'Hiring Manager',
-    description: 'View candidates for your department jobs',
-  },
-];
 
 export function SignupForm({ onSuccess }: SignupFormProps) {
   const navigate = useNavigate();
@@ -94,7 +70,7 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
       email: '',
       password: '',
       confirmPassword: '',
-      role: undefined,
+      role: 'admin', // Default to admin role
       department: '',
       agreeToTerms: false,
     },
@@ -241,42 +217,6 @@ export function SignupForm({ onSuccess }: SignupFormProps) {
           {errors.email && (
             <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>
           )}
-        </div>
-
-        {/* Role Selection */}
-        <div>
-          <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-            Role
-          </label>
-          <select
-            {...register('role')}
-            id="role"
-            className={`block w-full px-3 py-3 border rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
-              errors.role
-                ? 'border-red-300 bg-red-50'
-                : 'border-gray-300 bg-white hover:border-gray-400'
-            }`}
-          >
-            <option value="">Select your role</option>
-            {roleOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          {errors.role && (
-            <p className="mt-2 text-sm text-red-600">{errors.role.message}</p>
-          )}
-          
-          {/* Role descriptions */}
-          <div className="mt-3 space-y-2">
-            {roleOptions.map((option) => (
-              <div key={option.value} className="text-xs text-gray-600 flex items-start">
-                <span className="font-medium text-gray-700 mr-2">{option.label}:</span>
-                <span>{option.description}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* Department Field */}

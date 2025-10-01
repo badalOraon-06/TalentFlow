@@ -5,6 +5,7 @@ import { useJobs, useUpdateJob } from '../hooks/useApiDirect';
 import { useOptimisticJobReorder } from '../hooks/useJobReorder';
 import { useAppStore } from '../store/appStore';
 import { Pagination, JobFormModal, SortableJobList } from '../components';
+import { useSimpleToast } from '../components/SimpleToast';
 import type { Job } from '../types';
 
 // Debounce hook
@@ -27,15 +28,35 @@ function useDebounce<T>(value: T, delay: number): T {
 export function JobsPage() {
   const navigate = useNavigate();
   const { jobFilters, updateJobFilters } = useAppStore();
-  const { data: jobsData, loading, error } = useJobs(jobFilters);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  
+  // Use different filters based on view mode
+  // In reorder mode (list), fetch all jobs without pagination
+  const effectiveFilters = viewMode === 'list' 
+    ? { 
+        search: jobFilters.search, 
+        status: jobFilters.status, 
+        page: 1, 
+        pageSize: 10000 // Large number to get all jobs
+      }
+    : jobFilters;
+  
+  const { data: jobsData, loading, error } = useJobs(effectiveFilters);
   const updateJobHook = useUpdateJob();
   const { reorderJobsOptimistically, loading: reorderLoading, error: reorderError, isRollingBack } = useOptimisticJobReorder();
+  const { showToast } = useSimpleToast();
   
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [jobMenuOpen, setJobMenuOpen] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [localJobs, setLocalJobs] = useState<Job[]>([]);
+  
+  // Handle view mode changes
+  const handleViewModeChange = (newMode: 'grid' | 'list') => {
+    setViewMode(newMode);
+    // When switching to reorder mode, we'll automatically fetch all jobs
+    // When switching back to grid, we'll use the current pagination
+  };
   
   // Local search state to prevent immediate API calls
   const [searchInput, setSearchInput] = useState(jobFilters.search);
@@ -98,12 +119,37 @@ export function JobsPage() {
   const handleArchiveToggle = async (job: Job) => {
     try {
       const newStatus = job.status === 'active' ? 'archived' : 'active';
+      
+      // Optimistically update the local jobs state immediately for instant UI feedback
+      setLocalJobs(prevJobs => 
+        prevJobs.map(j => 
+          j.id === job.id 
+            ? { ...j, status: newStatus, updatedAt: new Date() }
+            : j
+        )
+      );
+      
+      // Update the job in the database
       await updateJobHook.updateJob(job.id, { status: newStatus });
-      // Refresh the jobs list
+      
+      // Refresh the jobs list to ensure data consistency
       updateJobFilters({ page: jobFilters.page });
       setJobMenuOpen(null);
+      
+      showToast(`Job "${job.title}" ${newStatus === 'archived' ? 'archived' : 'restored'} successfully`, 'success');
     } catch (error) {
       console.error('Failed to update job status:', error);
+      
+      // Revert the optimistic update on error
+      setLocalJobs(prevJobs => 
+        prevJobs.map(j => 
+          j.id === job.id 
+            ? { ...j, status: job.status, updatedAt: job.updatedAt }
+            : j
+        )
+      );
+      
+      showToast('Failed to update job status', 'error');
     }
   };
 
@@ -322,7 +368,7 @@ export function JobsPage() {
               {/* Enhanced View Toggle */}
               <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20">
                 <button
-                  onClick={() => setViewMode('grid')}
+                  onClick={() => handleViewModeChange('grid')}
                   className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     viewMode === 'grid'
                       ? 'bg-white text-blue-600 shadow-sm'
@@ -333,7 +379,7 @@ export function JobsPage() {
                   Grid View
                 </button>
                 <button
-                  onClick={() => setViewMode('list')}
+                  onClick={() => handleViewModeChange('list')}
                   className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     viewMode === 'list'
                       ? 'bg-white text-blue-600 shadow-sm'
@@ -498,9 +544,9 @@ export function JobsPage() {
                       <List className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-lg">Reorder Mode Active</h3>
+                      <h3 className="font-bold text-lg">Reorder Mode Active - All Jobs Loaded</h3>
                       <p className="text-sm mt-1">
-                        Drag and drop jobs to reorder them. Changes are saved automatically to the database.
+                        Showing all {localJobs.length} jobs. Drag and drop to reorder them. Changes are saved automatically.
                       </p>
                     </div>
                   </div>
@@ -691,8 +737,8 @@ export function JobsPage() {
           </div>
         )}
 
-        {/* Enhanced Pagination */}
-        {totalJobs > 0 && (
+        {/* Enhanced Pagination - Hidden in reorder mode */}
+        {totalJobs > 0 && viewMode === 'grid' && (
           <div className="border-t border-gray-200 bg-white rounded-b-2xl">
             <Pagination
               currentPage={jobFilters.page}
