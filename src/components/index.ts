@@ -29,3 +29,9 @@ export * from './QuestionBuilder';
 export * from './SectionBuilder';
 export * from './AssessmentBuilder';
 export * from './AssessmentPreview';
+
+// Authentication Components
+export * from './LoginForm';
+export * from './SignupForm';
+export * from './UserMenu';
+export * from './ProtectedRoute';

@@ -1,8 +1,30 @@
 {
   "name": "talentflow",
+  "version": "1.0.0",
+  "description": "A modern Applicant Tracking System (ATS) built with React, TypeScript, and cutting-edge web technologies",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "author": {
+    "name": "Badal Oraon",
+    "email": "your.email@example.com",
+    "url": "https://github.com/badalOraon-06"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/badalOraon-06/TalentFlow.git"
+  },
+  "homepage": "https://github.com/badalOraon-06/TalentFlow#readme",
+  "keywords": [
+    "react",
+    "typescript",
+    "ats",
+    "recruitment",
+    "hiring",
+    "hr",
+    "tailwindcss",
+    "vite"
+  ],
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

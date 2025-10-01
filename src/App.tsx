@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
-import { Building2, Users, ClipboardList, Loader2 } from 'lucide-react';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Building2, Users, ClipboardList, Loader2, BarChart3 } from 'lucide-react';
 import { initializeDatabase } from './lib/database';
 import { useCandidates, useUpdateCandidate } from './hooks/useApiDirect';
-import { JobsPage, JobDetail, CandidateProfile, AssessmentsPage, AssessmentTakingPage, AssessmentCompletedPage, AssessmentResponsesPage } from './pages';
+import { Dashboard, JobsPage, JobDetail, CandidateProfile, AssessmentsPage, AssessmentTakingPage, AssessmentCompletedPage, AssessmentResponsesPage, LoginPage, SignupPage } from './pages';
 import { KanbanBoard } from './components/DragAndDrop';
 import { VirtualizedCandidateList } from './components/VirtualizedList';
+import { UserMenu } from './components/UserMenu';
+import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute';
+import { useIsAuthenticated } from './store/authStore';
 import type { Candidate, CandidateStage } from './types';
 import './App.css';
 
@@ -13,7 +16,7 @@ import './App.css';
 function CandidatesSection({ 
   optimisticCandidates, 
   viewMode, 
-  setViewMode, 
+  setViewMode,
   handleStageChange 
 }: {
   optimisticCandidates: Candidate[];
@@ -172,6 +175,154 @@ function CandidatesSection({
   );
 }
 
+// Protected Header Component
+function AppHeader() {
+  const isAuthenticated = useIsAuthenticated();
+
+  if (!isAuthenticated) {
+    return null; // Don't show header on login/signup pages
+  }
+
+  return (
+    <header className="bg-white shadow-sm border-b">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center">
+              <Building2 className="h-8 w-8 text-blue-600" />
+              <span className="ml-2 text-xl font-semibold text-gray-900">TalentFlow</span>
+            </Link>
+          </div>
+          <nav className="flex space-x-8">
+            <Link to="/" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Dashboard
+            </Link>
+            <Link to="/jobs" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+              <Building2 className="h-4 w-4 mr-2" />
+              Jobs
+            </Link>
+            <Link to="/candidates" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+              <Users className="h-4 w-4 mr-2" />
+              Candidates
+            </Link>
+            <Link to="/assessments" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
+              <ClipboardList className="h-4 w-4 mr-2" />
+              Assessments
+            </Link>
+          </nav>
+          <div className="flex items-center space-x-4">
+            <UserMenu />
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// Protected Main Content Component
+function AppMain() {
+  const isAuthenticated = useIsAuthenticated();
+
+  return (
+    <main className={isAuthenticated ? "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" : ""}>
+      <Routes>
+        {/* Public Routes */}
+        <Route 
+          path="/login" 
+          element={
+            <PublicRoute>
+              <LoginPage />
+            </PublicRoute>
+          } 
+        />
+        <Route 
+          path="/signup" 
+          element={
+            <PublicRoute>
+              <SignupPage />
+            </PublicRoute>
+          } 
+        />
+        
+        {/* Protected Routes */}
+        <Route 
+          path="/" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/jobs" 
+          element={
+            <ProtectedRoute>
+              <JobsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/jobs/:jobId" 
+          element={
+            <ProtectedRoute>
+              <JobDetail />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/candidates" 
+          element={
+            <ProtectedRoute>
+              <CandidatesPlaceholder />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/candidates/:candidateId" 
+          element={
+            <ProtectedRoute>
+              <CandidateProfile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/assessments" 
+          element={
+            <ProtectedRoute>
+              <AssessmentsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/assessments/take/:jobId/:candidateId" 
+          element={
+            <ProtectedRoute>
+              <AssessmentTakingPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/assessments/completed/:candidateId" 
+          element={
+            <ProtectedRoute>
+              <AssessmentCompletedPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/assessments/responses/:jobId" 
+          element={
+            <ProtectedRoute>
+              <AssessmentResponsesPage />
+            </ProtectedRoute>
+          } 
+        />
+      </Routes>
+    </main>
+  );
+}
+
 function App() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [initError, setInitError] = useState<string | null>(null);
@@ -233,46 +384,8 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center">
-                <Building2 className="h-8 w-8 text-blue-600" />
-                <span className="ml-2 text-xl font-semibold text-gray-900">TalentFlow</span>
-              </div>
-              <nav className="flex space-x-8">
-                <Link to="/jobs" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
-                  <Building2 className="h-4 w-4 mr-2" />
-                  Jobs
-                </Link>
-                <Link to="/candidates" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
-                  <Users className="h-4 w-4 mr-2" />
-                  Candidates
-                </Link>
-                <Link to="/assessments" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium flex items-center">
-                  <ClipboardList className="h-4 w-4 mr-2" />
-                  Assessments
-                </Link>
-              </nav>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Routes>
-            <Route path="/" element={<Navigate to="/jobs" replace />} />
-            <Route path="/jobs" element={<JobsPage />} />
-            <Route path="/jobs/:jobId" element={<JobDetail />} />
-            <Route path="/candidates" element={<CandidatesPlaceholder />} />
-            <Route path="/candidates/:candidateId" element={<CandidateProfile />} />
-            <Route path="/assessments" element={<AssessmentsPage />} />
-            <Route path="/assessments/take/:jobId/:candidateId" element={<AssessmentTakingPage />} />
-            <Route path="/assessments/completed/:candidateId" element={<AssessmentCompletedPage />} />
-            <Route path="/assessments/responses/:jobId" element={<AssessmentResponsesPage />} />
-          </Routes>
-        </main>
+        <AppHeader />
+        <AppMain />
       </div>
     </Router>
   );

@@ -356,6 +356,83 @@ export interface ModalState {
   data?: any;
 }
 
+// User and Authentication types
+export type UserRole = 'admin' | 'hr_manager' | 'recruiter' | 'hiring_manager';
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  avatar?: string;
+  department?: string;
+  isActive: boolean;
+  lastLoginAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  avatar?: string;
+  department?: string;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
+export interface SignupData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: UserRole;
+  department?: string;
+}
+
+export interface AuthState {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  sessionExpiry: Date | null;
+}
+
+export interface AuthResponse {
+  user: AuthUser;
+  token: string;
+  expiresAt: Date;
+}
+
+export interface PasswordResetRequest {
+  email: string;
+}
+
+export interface PasswordReset {
+  token: string;
+  password: string;
+  confirmPassword: string;
+}
+
+// Role-based permissions
+export interface RolePermissions {
+  canManageUsers: boolean;
+  canCreateJobs: boolean;
+  canEditJobs: boolean;
+  canDeleteJobs: boolean;
+  canManageCandidates: boolean;
+  canViewAllCandidates: boolean;
+  canCreateAssessments: boolean;
+  canViewReports: boolean;
+  canAccessAdminPanel: boolean;
+}
+
 // Utility types
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];

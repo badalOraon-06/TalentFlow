@@ -1,6 +1,6 @@
 import { http, HttpResponse, delay } from 'msw';
 import { dbOperations } from '../lib/database';
-import type { JobCreateInput, JobUpdateInput, CandidateCreateInput, CandidateUpdateInput } from '../types';
+import type { JobCreateInput, JobUpdateInput, CandidateCreateInput, CandidateUpdateInput, LoginCredentials, SignupData, AuthUser } from '../types';
 
 // Utility function to simulate network delay and occasional errors
 async function simulateNetwork() {
@@ -361,9 +361,132 @@ export const assessmentHandlers = [
   })
 ];
 
+// Authentication handlers
+export const authHandlers = [
+  // POST /auth/login - User login
+  http.post('/api/auth/login', async ({ request }) => {
+    await simulateNetwork();
+    
+    try {
+      const credentials = await request.json() as LoginCredentials;
+      
+      // Get user from database
+      const user = await dbOperations.getUserByEmail(credentials.email);
+      
+      if (!user) {
+        return HttpResponse.json(
+          { success: false, message: 'Invalid email or password' },
+          { status: 401 }
+        );
+      }
+
+      if (!user.isActive) {
+        return HttpResponse.json(
+          { success: false, message: 'Your account has been deactivated' },
+          { status: 401 }
+        );
+      }
+
+      // For demo purposes, we'll accept any password that matches 'password123'
+      // In production, this would use proper password hashing
+      if (credentials.password !== 'password123') {
+        return HttpResponse.json(
+          { success: false, message: 'Invalid email or password' },
+          { status: 401 }
+        );
+      }
+
+      // Create auth user response (excluding sensitive data)
+      const authUser: AuthUser = {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        department: user.department,
+        avatar: user.avatar,
+      };
+
+      // In a real app, you'd generate a JWT token here
+      const sessionExpiry = new Date();
+      sessionExpiry.setHours(sessionExpiry.getHours() + 24); // 24 hour session
+
+      return HttpResponse.json({
+        success: true,
+        data: {
+          user: authUser,
+          sessionExpiry: sessionExpiry.toISOString(),
+        },
+      });
+    } catch (error) {
+      return handleError(error, 'Login failed');
+    }
+  }),
+
+  // POST /auth/signup - User registration
+  http.post('/api/auth/signup', async ({ request }) => {
+    await simulateNetwork();
+    
+    try {
+      const signupData = await request.json() as SignupData;
+      
+      // Check if user already exists
+      const existingUser = await dbOperations.getUserByEmail(signupData.email);
+      if (existingUser) {
+        return HttpResponse.json(
+          { success: false, message: 'A user with this email already exists' },
+          { status: 409 }
+        );
+      }
+
+      // Create new user
+      const newUser = await dbOperations.createUser({
+        email: signupData.email,
+        name: signupData.name,
+        role: signupData.role,
+        department: signupData.department,
+        isActive: true,
+      });
+
+      // Create auth user response
+      const authUser: AuthUser = {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+        department: newUser.department,
+        avatar: newUser.avatar,
+      };
+
+      const sessionExpiry = new Date();
+      sessionExpiry.setHours(sessionExpiry.getHours() + 24);
+
+      return HttpResponse.json({
+        success: true,
+        data: {
+          user: authUser,
+          sessionExpiry: sessionExpiry.toISOString(),
+        },
+      });
+    } catch (error) {
+      return handleError(error, 'Signup failed');
+    }
+  }),
+
+  // POST /auth/logout - User logout
+  http.post('/api/auth/logout', async () => {
+    await delay(100); // Minimal delay for logout
+    
+    return HttpResponse.json({
+      success: true,
+      message: 'Logged out successfully',
+    });
+  }),
+];
+
 // Combine all handlers
 export const handlers = [
   ...jobHandlers,
   ...candidateHandlers,
-  ...assessmentHandlers
+  ...assessmentHandlers,
+  ...authHandlers,
 ];

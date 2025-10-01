@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Job, Candidate, Assessment, CandidateTimelineEvent, AssessmentResponse } from '../types';
+import type { Job, Candidate, Assessment, CandidateTimelineEvent, AssessmentResponse, User } from '../types';
 
 export class TalentFlowDatabase extends Dexie {
   jobs!: Table<Job>;
@@ -7,16 +7,18 @@ export class TalentFlowDatabase extends Dexie {
   assessments!: Table<Assessment>;
   candidateTimeline!: Table<CandidateTimelineEvent>;
   assessmentResponses!: Table<AssessmentResponse>;
+  users!: Table<User>;
 
   constructor() {
     super('TalentFlowDatabase');
     
-    this.version(1).stores({
+    this.version(2).stores({
       jobs: 'id, title, status, createdAt, order',
       candidates: 'id, name, email, jobId, stage, appliedAt',
       assessments: 'id, jobId, title, createdAt',
       candidateTimeline: 'id, candidateId, type, createdAt',
-      assessmentResponses: 'id, candidateId, assessmentId, submittedAt'
+      assessmentResponses: 'id, candidateId, assessmentId, submittedAt',
+      users: 'id, email, role, isActive, createdAt'
     });
   }
 }
@@ -31,38 +33,232 @@ export async function initializeDatabase() {
     
     // Check if data already exists
     const jobCount = await db.jobs.count();
+    const userCount = await db.users.count();
+    
     if (jobCount === 0) {
       console.log('🌱 Seeding database with initial data...');
-      await seedDatabase();
-      console.log('✅ Database seeded successfully!');
+      try {
+        await seedDatabase();
+        console.log('✅ Database seeded successfully!');
+      } catch (seedError) {
+        console.warn('⚠️ Database seeding failed, but continuing:', seedError);
+        // Don't fail initialization if seeding fails
+      }
     } else {
       console.log('📊 Database already contains data');
+    }
+    
+    if (userCount === 0) {
+      console.log('👥 Creating default users...');
+      try {
+        await seedUsers();
+        console.log('✅ Default users created!');
+      } catch (userError) {
+        console.warn('⚠️ User seeding failed:', userError);
+        // Try to ensure at least one admin user exists
+        await createEmergencyAdmin();
+      }
+    } else {
+      console.log('👥 Users already exist in database');
+      // Ensure default users exist even if some users are present
+      try {
+        await ensureDefaultUsers();
+      } catch (ensureError) {
+        console.warn('⚠️ Could not ensure default users:', ensureError);
+      }
     }
     
     return true;
   } catch (error) {
     console.error('❌ Failed to initialize database:', error);
-    return false;
+    // Try to create emergency admin if everything fails
+    try {
+      await createEmergencyAdmin();
+      console.log('🆘 Created emergency admin user');
+      return true;
+    } catch (emergencyError) {
+      console.error('❌ Failed to create emergency admin:', emergencyError);
+      return false;
+    }
   }
 }
 
 // Seed the database with sample data
 async function seedDatabase() {
-  const { generateJobs, generateCandidates, generateAssessments, generateTimelineEvents } = await import('./seedData');
-  
-  // Generate seed data
-  const jobs = generateJobs(25);
-  const candidates = generateCandidates(1000, jobs);
-  const assessments = generateAssessments(jobs);
-  const timelineEvents = generateTimelineEvents(candidates);
-  
-  // Insert data into database
-  await db.transaction('rw', db.jobs, db.candidates, db.assessments, db.candidateTimeline, async () => {
-    await db.jobs.bulkAdd(jobs);
-    await db.candidates.bulkAdd(candidates);
-    await db.assessments.bulkAdd(assessments);
-    await db.candidateTimeline.bulkAdd(timelineEvents);
-  });
+  try {
+    const { generateJobs, generateCandidates, generateAssessments, generateTimelineEvents } = await import('./seedData');
+    
+    // Generate seed data
+    const jobs = generateJobs(25);
+    const candidates = generateCandidates(1000, jobs);
+    const assessments = generateAssessments(jobs);
+    const timelineEvents = generateTimelineEvents(candidates);
+    
+    // Insert data into database with error handling
+    await db.transaction('rw', db.jobs, db.candidates, db.assessments, db.candidateTimeline, async () => {
+      try {
+        await db.jobs.bulkAdd(jobs);
+      } catch (error) {
+        console.warn('⚠️ Some jobs may already exist, adding individually...');
+        for (const job of jobs) {
+          try {
+            await db.jobs.add(job);
+          } catch (jobError) {
+            // Job already exists, skip
+          }
+        }
+      }
+
+      try {
+        await db.candidates.bulkAdd(candidates);
+      } catch (error) {
+        console.warn('⚠️ Some candidates may already exist, adding individually...');
+        for (const candidate of candidates) {
+          try {
+            await db.candidates.add(candidate);
+          } catch (candidateError) {
+            // Candidate already exists, skip
+          }
+        }
+      }
+
+      try {
+        await db.assessments.bulkAdd(assessments);
+      } catch (error) {
+        console.warn('⚠️ Some assessments may already exist, adding individually...');
+        for (const assessment of assessments) {
+          try {
+            await db.assessments.add(assessment);
+          } catch (assessmentError) {
+            // Assessment already exists, skip
+          }
+        }
+      }
+
+      try {
+        await db.candidateTimeline.bulkAdd(timelineEvents);
+      } catch (error) {
+        console.warn('⚠️ Some timeline events may already exist, adding individually...');
+        for (const event of timelineEvents) {
+          try {
+            await db.candidateTimeline.add(event);
+          } catch (eventError) {
+            // Timeline event already exists, skip
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error seeding database:', error);
+    throw error;
+  }
+}
+
+// Seed users with default accounts
+async function seedUsers() {
+  const defaultUsers: User[] = [
+    {
+      id: 'user-admin-001',
+      email: 'admin@talentflow.com',
+      name: 'System Administrator',
+      role: 'admin',
+      department: 'IT',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'user-hr-001',
+      email: 'hr@talentflow.com',
+      name: 'HR Manager',
+      role: 'hr_manager',
+      department: 'Human Resources',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'user-recruiter-001',
+      email: 'recruiter@talentflow.com',
+      name: 'Senior Recruiter',
+      role: 'recruiter',
+      department: 'Human Resources',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: 'user-hiring-001',
+      email: 'hiring@talentflow.com',
+      name: 'Hiring Manager',
+      role: 'hiring_manager',
+      department: 'Engineering',
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ];
+
+  try {
+    await db.users.bulkAdd(defaultUsers);
+    console.log('👥 Created default users:', defaultUsers.map(u => `${u.name} (${u.email})`));
+  } catch (error) {
+    // Handle duplicate key errors gracefully
+    console.log('👥 Some default users may already exist, checking individually...');
+    for (const user of defaultUsers) {
+      try {
+        const existing = await db.users.get(user.id);
+        if (!existing) {
+          await db.users.add(user);
+          console.log(`👤 Created user: ${user.name} (${user.email})`);
+        }
+      } catch (userError) {
+        console.log(`👤 User ${user.email} already exists`);
+      }
+    }
+  }
+}
+
+// Create emergency admin user as fallback
+async function createEmergencyAdmin() {
+  const emergencyAdmin: User = {
+    id: 'emergency-admin-001',
+    email: 'admin@talentflow.com',
+    name: 'Emergency Admin',
+    role: 'admin',
+    department: 'System',
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  try {
+    await db.users.add(emergencyAdmin);
+    console.log('🆘 Emergency admin created successfully');
+  } catch (error) {
+    // Admin might already exist, try to update instead
+    await db.users.put(emergencyAdmin);
+    console.log('🆘 Emergency admin updated successfully');
+  }
+}
+
+// Ensure default users exist (called when database already has users)
+async function ensureDefaultUsers() {
+  const requiredUsers = [
+    'admin@talentflow.com',
+    'hr@talentflow.com', 
+    'recruiter@talentflow.com',
+    'hiring@talentflow.com'
+  ];
+
+  for (const email of requiredUsers) {
+    const existing = await db.users.where('email').equals(email).first();
+    if (!existing) {
+      console.log(`👤 Creating missing default user: ${email}`);
+      await seedUsers(); // This will handle duplicates gracefully
+      break; // Only run once if any users are missing
+    }
+  }
 }
 
 // Utility functions for database operations
@@ -348,5 +544,140 @@ export const dbOperations = {
     
     await db.assessmentResponses.put(response);
     return response;
+  },
+
+  // Users
+  async getUsers(filters: { search?: string; role?: string; isActive?: boolean; page?: number; pageSize?: number } = {}) {
+    const { search, role, isActive, page = 1, pageSize = 50 } = filters;
+    
+    let query = db.users.orderBy('createdAt').reverse();
+    
+    if (role) {
+      query = query.filter(user => user.role === role);
+    }
+    
+    if (typeof isActive === 'boolean') {
+      query = query.filter(user => user.isActive === isActive);
+    }
+    
+    if (search) {
+      query = query.filter(user => 
+        user.name.toLowerCase().includes(search.toLowerCase()) ||
+        user.email.toLowerCase().includes(search.toLowerCase()) ||
+        (user.department && user.department.toLowerCase().includes(search.toLowerCase())) ||
+        false
+      );
+    }
+    
+    const total = await query.count();
+    const users = await query.offset((page - 1) * pageSize).limit(pageSize).toArray();
+    
+    return {
+      users,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize)
+    };
+  },
+
+  async getUserById(id: string) {
+    return await db.users.get(id);
+  },
+
+  async getUserByEmail(email: string) {
+    return await db.users.where('email').equals(email).first();
+  },
+
+  async createUser(userData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>) {
+    // Check for unique email
+    const existingUser = await db.users.where('email').equals(userData.email).first();
+    if (existingUser) {
+      throw new Error(`A user with email "${userData.email}" already exists`);
+    }
+    
+    const user: User = {
+      ...userData,
+      id: crypto.randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    await db.users.add(user);
+    return user;
+  },
+
+  async updateUser(id: string, updates: Partial<User>) {
+    // Check for unique email if email is being updated
+    if (updates.email) {
+      const existingUser = await db.users.where('email').equals(updates.email).first();
+      if (existingUser && existingUser.id !== id) {
+        throw new Error(`A user with email "${updates.email}" already exists`);
+      }
+    }
+    
+    const updated = { ...updates, updatedAt: new Date() };
+    await db.users.update(id, updated);
+    return await db.users.get(id);
+  },
+
+  async updateUserLastLogin(id: string) {
+    await db.users.update(id, { 
+      lastLoginAt: new Date(),
+      updatedAt: new Date()
+    });
+  },
+
+  async deactivateUser(id: string) {
+    await db.users.update(id, { 
+      isActive: false,
+      updatedAt: new Date()
+    });
+  },
+
+  async activateUser(id: string) {
+    await db.users.update(id, { 
+      isActive: true,
+      updatedAt: new Date()
+    });
+  },
+
+  async deleteUser(id: string) {
+    await db.users.delete(id);
+  },
+
+  // Authentication helpers
+  async authenticateUser(email: string, password: string) {
+    // In a real app, you'd hash and compare passwords
+    // For demo purposes, we'll use simple logic
+    const user = await this.getUserByEmail(email);
+    
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
+    if (!user.isActive) {
+      throw new Error('User account is deactivated');
+    }
+    
+    // Simple password check for demo (normally you'd hash and compare)
+    // Default passwords: admin123, hr123, recruiter123, hiring123
+    const defaultPasswords: Record<string, string> = {
+      'admin@talentflow.com': 'admin123',
+      'hr@talentflow.com': 'hr123',
+      'recruiter@talentflow.com': 'recruiter123',
+      'hiring@talentflow.com': 'hiring123',
+    };
+    
+    const expectedPassword = defaultPasswords[email] || 'password123';
+    
+    if (password !== expectedPassword) {
+      throw new Error('Invalid credentials');
+    }
+    
+    // Update last login
+    await this.updateUserLastLogin(user.id);
+    
+    return user;
   }
 };
