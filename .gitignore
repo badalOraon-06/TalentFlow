@@ -107,3 +107,6 @@ public/mockServiceWorker.js.map
 
 # Temporary files
 .tmp/
+
+# Vercel
+.vercel
