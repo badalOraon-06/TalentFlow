@@ -3,13 +3,11 @@
 > A modern Applicant Tracking System (ATS) built with React, TypeScript, and cutting-edge web technologies.
 
 **Live Demo**: [https://talent-flow-rho.vercel.app/](https://talent-flow-rho.vercel.app/)  
-**Repository**: [GitHub - TalentFlow](https://github.com/badalOraon-06/TalentFlow)
-
 ---
 
 ## 📖 Overview
 
-TalentFlow is a front-end only hiring platform that enables HR teams to manage jobs, candidates, and assessments. Built as a technical assignment demonstrating modern React development practices with offline-first architecture using IndexedDB and simulated API calls via Mock Service Worker (MSW).
+TalentFlow is a front-end only hiring platform that enables HR teams to manage jobs, candidates, and assessments. Built as a technical assignment demonstrating modern React development practices using IndexedDB and simulated API calls via Mock Service Worker (MSW).
 
 ---
 
