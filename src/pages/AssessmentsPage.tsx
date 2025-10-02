@@ -24,19 +24,6 @@ export function AssessmentsPage() {
   const { data: allAssessments } = useAllAssessments();
   const { data: dbStats } = useDatabaseStats();
 
-  // Debug logging
-  useEffect(() => {
-    console.log('🔍 AssessmentsPage Debug:', {
-      jobsLoading,
-      jobsError,
-      jobsData,
-      jobsCount: jobsData?.jobs?.length,
-      selectedJobId,
-      allAssessments: allAssessments?.length,
-      dbStats
-    });
-  }, [jobsLoading, jobsError, jobsData, selectedJobId, allAssessments, dbStats]);
-
   // Fetch assessments for selected job
   const { data: assessments, loading: assessmentsLoading } = useAssessments(selectedJobId || undefined);
 

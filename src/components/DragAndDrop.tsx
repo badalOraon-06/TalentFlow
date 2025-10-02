@@ -224,9 +224,6 @@ const STAGES: { id: CandidateStage; title: string; color: string; bgColor: strin
 ];
 
 export function KanbanBoard({ candidates, onStageChange, onCandidateClick, className = '' }: KanbanBoardProps) {
-  console.log('🎯 KanbanBoard rendered with candidates:', candidates.length);
-  console.log('🎯 KanbanBoard candidates:', candidates);
-  
   const [activeCandidate, setActiveCandidate] = React.useState<Candidate | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   
@@ -242,10 +239,7 @@ export function KanbanBoard({ candidates, onStageChange, onCandidateClick, class
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    console.log('🎯 Drag started:', event.active.id);
-    console.log('🎯 Drag start event:', event);
     const candidate = candidates.find(c => c.id === event.active.id);
-    console.log('🎯 Found candidate:', candidate);
     setActiveCandidate(candidate || null);
     setIsDragging(true);
   };
@@ -253,20 +247,16 @@ export function KanbanBoard({ candidates, onStageChange, onCandidateClick, class
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     
-    console.log('🎯 Drag ended:', { activeId: active.id, overId: over?.id });
-    
     // Reset active candidate and drag state
     setActiveCandidate(null);
     setIsDragging(false);
     
     if (!over) {
-      console.log('❌ No drop target');
       return;
     }
 
     const activeCandidate = candidates.find(c => c.id === active.id);
     if (!activeCandidate) {
-      console.log('❌ Active candidate not found');
       return;
     }
 
@@ -275,17 +265,10 @@ export function KanbanBoard({ candidates, onStageChange, onCandidateClick, class
     const newStage = over.id as string;
     
     if (!validStages.includes(newStage as CandidateStage)) {
-      console.log('❌ Invalid stage:', newStage);
       return;
     }
     
     const typedNewStage = newStage as CandidateStage;
-    
-    console.log('🔄 Stage change:', { 
-      candidate: activeCandidate.name, 
-      from: activeCandidate.stage, 
-      to: typedNewStage 
-    });
     
     if (activeCandidate.stage !== typedNewStage) {
       try {
