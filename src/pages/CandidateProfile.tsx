@@ -27,8 +27,9 @@ import { Button, NotesComponent } from '../components';
 import type { CandidateTimelineEvent, CandidateStage, Note } from '../types';
 
 export function CandidateProfile() {
-  const { candidateId } = useParams<{ candidateId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const candidateId = id; // Use id from route params
   const { data: candidate, loading, error, refetch } = useCandidate(candidateId);
   const { updateCandidate } = useUpdateCandidate();
   const [timeline, setTimeline] = useState<CandidateTimelineEvent[]>([]);

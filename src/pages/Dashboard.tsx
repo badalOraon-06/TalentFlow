@@ -7,17 +7,13 @@ import {
   Building2,
   ClipboardList,
   Target,
-  Clock,
   CheckCircle,
   Plus,
   ArrowRight,
   Activity,
-  Award,
   FileText,
   Eye,
-  Zap,
-  Star,
-  Heart
+  Zap
 } from 'lucide-react';
 import { useJobs, useCandidates } from '../hooks/useApiDirect';
 
@@ -110,61 +106,6 @@ function QuickAction({ title, description, icon, to, color }: QuickActionProps) 
   );
 }
 
-interface RecentActivityItem {
-  id: string;
-  type: 'job_created' | 'candidate_applied' | 'assessment_completed' | 'stage_changed';
-  title: string;
-  description: string;
-  timestamp: Date;
-  color: string;
-}
-
-function RecentActivityFeed({ activities }: { activities: RecentActivityItem[] }) {
-  const getActivityStyles = (color: string) => {
-    const styles = {
-      blue: { bg: 'bg-gradient-to-br from-blue-500 to-blue-600', text: 'text-white', border: 'border-blue-200', bgLight: 'bg-blue-50/50' },
-      green: { bg: 'bg-gradient-to-br from-emerald-500 to-emerald-600', text: 'text-white', border: 'border-emerald-200', bgLight: 'bg-emerald-50/50' },
-      purple: { bg: 'bg-gradient-to-br from-violet-500 to-violet-600', text: 'text-white', border: 'border-violet-200', bgLight: 'bg-violet-50/50' },
-      orange: { bg: 'bg-gradient-to-br from-amber-500 to-amber-600', text: 'text-white', border: 'border-amber-200', bgLight: 'bg-amber-50/50' }
-    };
-    return styles[color as keyof typeof styles] || styles.blue;
-  };
-
-  return (
-    <div className="space-y-4">
-      {activities.map((activity, index) => {
-        const styles = getActivityStyles(activity.color);
-        return (
-          <div key={activity.id} className={`flex items-start space-x-4 p-5 bg-white/60 backdrop-blur-sm rounded-2xl border border-gray-200/50 hover:shadow-lg hover:bg-white/80 transition-all duration-300 hover:-translate-y-1 ${styles.bgLight}`}>
-            <div className={`w-12 h-12 ${styles.bg} rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg border ${styles.border}`}>
-              <Activity className={`h-6 w-6 ${styles.text}`} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-base font-bold text-gray-900 mb-1">{activity.title}</p>
-              <p className="text-sm text-gray-600 leading-relaxed mb-2">{activity.description}</p>
-              <div className="flex items-center space-x-2">
-                <div className="h-1 w-1 bg-gray-400 rounded-full"></div>
-                <p className="text-xs font-medium text-gray-500">
-                  {activity.timestamp.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric' 
-                  })} at {activity.timestamp.toLocaleTimeString('en-US', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                  })}
-                </p>
-              </div>
-            </div>
-            <div className="text-xs font-semibold text-gray-400 mt-1">
-              #{index + 1}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 export function Dashboard() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -197,34 +138,6 @@ export function Dashboard() {
     acc[candidate.stage] = (acc[candidate.stage] || 0) + 1;
     return acc;
   }, {} as Record<string, number>) || {};
-
-  // Mock recent activities (in a real app, this would come from an activity log)
-  const recentActivities: RecentActivityItem[] = [
-    {
-      id: '1',
-      type: 'job_created',
-      title: 'New Job Posted',
-      description: 'Senior React Developer position created',
-      timestamp: new Date(),
-      color: 'blue'
-    },
-    {
-      id: '2',
-      type: 'candidate_applied',
-      title: 'New Application',
-      description: 'Sarah Johnson applied for Frontend Developer role',
-      timestamp: new Date(Date.now() - 1000 * 60 * 30),
-      color: 'green'
-    },
-    {
-      id: '3',
-      type: 'assessment_completed',
-      title: 'Assessment Completed',
-      description: 'Technical assessment for Backend Developer completed',
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2),
-      color: 'purple'
-    }
-  ];
 
   if (isLoading) {
     return (
@@ -408,91 +321,6 @@ export function Dashboard() {
                 to="/assessments"
                 color="purple"
               />
-            </div>
-          </div>
-        </div>
-
-        {/* Enhanced Recent Activity & Statistics */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {/* Professional Recent Activity */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden">
-            <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 px-8 py-6 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-indigo-500/20"></div>
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-                    <Activity className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white tracking-tight">Recent Activity</h2>
-                    <p className="text-violet-100 text-sm font-medium">Live platform updates</p>
-                  </div>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-xl px-3 py-1 border border-white/20">
-                  <div className="text-white text-xs font-medium">Live</div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-8">
-              <RecentActivityFeed activities={recentActivities} />
-            </div>
-          </div>
-
-          {/* Enhanced Hiring Statistics */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 px-8 py-6 relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-green-500/20"></div>
-              <div className="relative flex items-center space-x-4">
-                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm border border-white/30">
-                  <Award className="h-7 w-7 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white tracking-tight">Performance Metrics</h2>
-                  <p className="text-emerald-100 text-sm font-medium">This month's achievements</p>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-8 space-y-6">
-              <div className="flex items-center justify-between p-6 bg-gradient-to-r from-emerald-50 to-green-100 rounded-2xl border border-emerald-200/50 hover:shadow-lg transition-all duration-300">
-                <div className="flex items-center space-x-4">
-                  <div className="w-14 h-14 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <CheckCircle className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">5</div>
-                    <div className="text-sm font-semibold text-emerald-700">Successful Hires</div>
-                  </div>
-                </div>
-                <Star className="h-6 w-6 text-emerald-600" />
-              </div>
-              
-              <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-100 rounded-2xl border border-blue-200/50 hover:shadow-lg transition-all duration-300">
-                <div className="flex items-center space-x-4">
-                  <div className="w-14 h-14 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <Clock className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">12 days</div>
-                    <div className="text-sm font-semibold text-blue-700">Avg. Time to Hire</div>
-                  </div>
-                </div>
-                <TrendingUp className="h-6 w-6 text-blue-600" />
-              </div>
-              
-              <div className="flex items-center justify-between p-6 bg-gradient-to-r from-violet-50 to-purple-100 rounded-2xl border border-violet-200/50 hover:shadow-lg transition-all duration-300">
-                <div className="flex items-center space-x-4">
-                  <div className="w-14 h-14 bg-violet-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <Heart className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-gray-900">95%</div>
-                    <div className="text-sm font-semibold text-violet-700">Candidate Satisfaction</div>
-                  </div>
-                </div>
-                <Award className="h-6 w-6 text-violet-600" />
-              </div>
             </div>
           </div>
         </div>
