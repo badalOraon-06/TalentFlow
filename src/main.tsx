@@ -5,12 +5,9 @@ import App from './App.tsx'
 
 // Initialize MSW for API mocking
 async function enableMocking() {
-  if (import.meta.env.PROD) {
-    console.log('🚀 Running in production mode - MSW disabled');
-    return
-  }
-
-  console.log('🔧 Initializing MSW for development...');
+  // Enable MSW in both development AND production since this is a front-end only app
+  // that uses MSW to simulate a backend API as per the assignment requirements
+  console.log('🔧 Initializing MSW for API mocking...');
   
   const { worker } = await import('./mocks/browser')
   
@@ -21,7 +18,8 @@ async function enableMocking() {
     }
   });
   
-  console.log('✅ MSW initialized and ready to intercept requests');
+  console.log('✅ MSW initialized and ready to intercept API requests');
+  console.log('📦 Environment:', import.meta.env.MODE);
 }
 
 enableMocking().then(() => {

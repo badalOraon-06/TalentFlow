@@ -133,6 +133,15 @@ export const useAuthStore = create<AuthStore>()(
             }),
           });
 
+          console.log('📡 Signup response status:', response.status, response.statusText);
+
+          // Check if response has content before trying to parse JSON
+          const contentType = response.headers.get('content-type');
+          if (!contentType || !contentType.includes('application/json')) {
+            console.error('❌ Response is not JSON:', contentType);
+            throw new Error(`Server returned ${response.status}: ${response.statusText}. MSW may not be running.`);
+          }
+
           const responseData = await response.json();
 
           if (!response.ok) {

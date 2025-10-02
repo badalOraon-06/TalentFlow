@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Plus, ArrowLeft, FileText, Building2, Target, BarChart3, Users, Award } from 'lucide-react';
 import { useJobs } from '../hooks/useApiDirect';
-import { useAssessments, useSaveAssessment, useAllAssessments, useDatabaseStats } from '../hooks/useApiDirect';
+import { useAssessments, useSaveAssessment, useDatabaseStats } from '../hooks/useApiDirect';
 import type { Job, Assessment } from '../types';
 import { Button, AssessmentBuilder } from '../components';
 import { useSimpleToast } from '../components/SimpleToast';
@@ -20,8 +20,7 @@ export function AssessmentsPage() {
     status: 'active'
   });
 
-  // Get all assessments count and database stats
-  const { data: allAssessments } = useAllAssessments();
+  // Get database stats
   const { data: dbStats } = useDatabaseStats();
 
   // Fetch assessments for selected job
