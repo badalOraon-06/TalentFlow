@@ -22,19 +22,19 @@ function CandidatesSection({
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8">
       {/* Enhanced Content Card */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
         {viewMode === 'list' ? (
-          <div className="p-8">
-            <div className="mb-6">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-green-600 rounded-xl flex items-center justify-center mr-3">
-                  <Building2 className="h-5 w-5 text-white" />
+          <div className="p-4 sm:p-6 md:p-8">
+            <div className="mb-4 sm:mb-6">
+              <div className="flex items-center mb-3 sm:mb-4">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-600 rounded-lg sm:rounded-xl flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
+                  <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">Candidate List View</h3>
-                  <p className="text-gray-600 text-sm">Browse and search through all candidates with detailed information</p>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900">Candidate List View</h3>
+                  <p className="text-gray-600 text-xs sm:text-sm hidden sm:block">Browse and search through all candidates with detailed information</p>
                 </div>
               </div>
             </div>
@@ -49,15 +49,15 @@ function CandidatesSection({
             />
           </div>
         ) : (
-          <div className="p-8">
-            <div className="mb-6">
-              <div className="flex items-center mb-8">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-600 rounded-xl flex items-center justify-center mr-4 shadow-lg">
-                  <ClipboardList className="h-5 w-5 text-white" />
+          <div className="p-4 sm:p-6 md:p-8">
+            <div className="mb-4 sm:mb-6">
+              <div className="flex items-center mb-4 sm:mb-6 md:mb-8">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-teal-600 rounded-lg sm:rounded-xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg flex-shrink-0">
+                  <ClipboardList className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">Kanban Board View</h3>
-                  <p className="text-gray-600 text-sm">Manage your candidate pipeline with intuitive drag and drop</p>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900">Kanban Board View</h3>
+                  <p className="text-gray-600 text-xs sm:text-sm hidden sm:block">Manage your candidate pipeline with intuitive drag and drop</p>
                 </div>
               </div>
             </div>
@@ -150,11 +150,11 @@ export function CandidatesPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">Loading candidates...</span>
+          <div className="flex items-center justify-center py-8 sm:py-12">
+            <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-sm sm:text-base text-gray-600">Loading candidates...</span>
           </div>
         </div>
       </div>
@@ -163,9 +163,9 @@ export function CandidatesPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6">
+      <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm sm:text-base">
             <strong className="font-bold">Error:</strong>
             <span className="block sm:inline"> {error}</span>
           </div>
@@ -175,64 +175,66 @@ export function CandidatesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-3 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header Section with Gradient */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 rounded-3xl p-8 text-white shadow-2xl">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-              <div className="mb-6 lg:mb-0">
-                <div className="flex items-center mb-4">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                    <Users className="h-8 w-8 text-white" />
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 text-white shadow-2xl">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-0">
+              <div className="flex-1">
+                <div className="flex items-center mb-3 sm:mb-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center mr-3 sm:mr-4 shadow-lg flex-shrink-0">
+                    <Users className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-white" />
                   </div>
-                  <div>
-                    <h1 className="text-3xl font-bold mb-2">Candidates Pipeline</h1>
-                    <p className="text-blue-100 text-lg">Manage and track your candidate pipeline with powerful tools</p>
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Candidates Pipeline</h1>
+                    <p className="text-blue-100 text-xs sm:text-sm md:text-base lg:text-lg hidden sm:block">Manage and track your candidate pipeline with powerful tools</p>
                   </div>
                 </div>
                 
                 {/* Enhanced Stats Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mt-6">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20">
-                    <div className="text-2xl font-bold">{stageStats.applied}</div>
-                    <div className="text-sm text-blue-100 flex items-center justify-center mt-1">
-                      <Clock className="h-4 w-4 mr-1" />
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4 mt-3 sm:mt-4 md:mt-6">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 text-center border border-white/20">
+                    <div className="text-xl sm:text-2xl font-bold">{stageStats.applied}</div>
+                    <div className="text-xs sm:text-sm text-blue-100 flex items-center justify-center mt-1">
+                      <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Applied
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20">
-                    <div className="text-2xl font-bold">{stageStats.screen}</div>
-                    <div className="text-sm text-blue-100 flex items-center justify-center mt-1">
-                      <UserCheck className="h-4 w-4 mr-1" />
-                      Screening
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 text-center border border-white/20">
+                    <div className="text-xl sm:text-2xl font-bold">{stageStats.screen}</div>
+                    <div className="text-xs sm:text-sm text-blue-100 flex items-center justify-center mt-1">
+                      <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                      <span className="hidden sm:inline">Screening</span>
+                      <span className="sm:hidden">Screen</span>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20">
-                    <div className="text-2xl font-bold">{stageStats.tech}</div>
-                    <div className="text-sm text-blue-100 flex items-center justify-center mt-1">
-                      <Users className="h-4 w-4 mr-1" />
-                      Technical
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 text-center border border-white/20">
+                    <div className="text-xl sm:text-2xl font-bold">{stageStats.tech}</div>
+                    <div className="text-xs sm:text-sm text-blue-100 flex items-center justify-center mt-1">
+                      <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                      <span className="hidden sm:inline">Technical</span>
+                      <span className="sm:hidden">Tech</span>
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20">
-                    <div className="text-2xl font-bold">{stageStats.offer}</div>
-                    <div className="text-sm text-blue-100 flex items-center justify-center mt-1">
-                      <CheckCircle className="h-4 w-4 mr-1" />
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 text-center border border-white/20">
+                    <div className="text-xl sm:text-2xl font-bold">{stageStats.offer}</div>
+                    <div className="text-xs sm:text-sm text-blue-100 flex items-center justify-center mt-1">
+                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Offer
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20">
-                    <div className="text-2xl font-bold">{stageStats.hired}</div>
-                    <div className="text-sm text-blue-100 flex items-center justify-center mt-1">
-                      <CheckCircle className="h-4 w-4 mr-1" />
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 text-center border border-white/20">
+                    <div className="text-xl sm:text-2xl font-bold">{stageStats.hired}</div>
+                    <div className="text-xs sm:text-sm text-blue-100 flex items-center justify-center mt-1">
+                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Hired
                     </div>
                   </div>
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20">
-                    <div className="text-2xl font-bold">{stageStats.rejected}</div>
-                    <div className="text-sm text-blue-100 flex items-center justify-center mt-1">
-                      <XCircle className="h-4 w-4 mr-1" />
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-3 sm:p-4 text-center border border-white/20">
+                    <div className="text-xl sm:text-2xl font-bold">{stageStats.rejected}</div>
+                    <div className="text-xs sm:text-sm text-blue-100 flex items-center justify-center mt-1">
+                      <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                       Rejected
                     </div>
                   </div>
@@ -240,30 +242,32 @@ export function CandidatesPage() {
               </div>
               
               {/* Enhanced View Toggle */}
-              <div className="flex flex-col items-center lg:items-end">
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-2 border border-white/20 shadow-lg">
-                  <div className="flex bg-white/10 rounded-xl p-1">
+              <div className="flex flex-col items-stretch lg:items-end w-full lg:w-auto">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-1.5 sm:p-2 border border-white/20 shadow-lg">
+                  <div className="flex bg-white/10 rounded-lg sm:rounded-xl p-1">
                     <button
                       onClick={() => setViewMode('list')}
-                      className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                      className={`flex items-center justify-center flex-1 lg:flex-none px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                         viewMode === 'list'
                           ? 'bg-white text-blue-600 shadow-lg'
                           : 'text-white hover:bg-white/20'
                       }`}
                     >
-                      <List className="h-5 w-5 mr-2" />
-                      List View
+                      <List className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+                      <span className="hidden sm:inline">List View</span>
+                      <span className="sm:hidden">List</span>
                     </button>
                     <button
                       onClick={() => setViewMode('kanban')}
-                      className={`flex items-center px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                      className={`flex items-center justify-center flex-1 lg:flex-none px-4 sm:px-6 py-2 sm:py-2.5 md:py-3 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                         viewMode === 'kanban'
                           ? 'bg-white text-blue-600 shadow-lg'
                           : 'text-white hover:bg-white/20'
                       }`}
                     >
-                      <Grid3X3 className="h-5 w-5 mr-2" />
-                      Kanban View
+                      <Grid3X3 className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5 sm:mr-2" />
+                      <span className="hidden sm:inline">Kanban View</span>
+                      <span className="sm:hidden">Kanban</span>
                     </button>
                   </div>
                 </div>

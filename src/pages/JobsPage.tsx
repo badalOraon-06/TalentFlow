@@ -251,8 +251,8 @@ export function JobsPage() {
       <div className="min-h-screen bg-gray-50">
         {/* Header skeleton */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center space-x-4">
                 <div className="w-12 h-12 bg-white/20 rounded-xl animate-pulse"></div>
                 <div>
@@ -349,64 +349,67 @@ export function JobsPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Enhanced Header with Gradient Background */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                <Building2 className="w-6 h-6 text-blue-600" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg flex-shrink-0">
+                <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-white">Jobs Management</h1>
-                <div className="flex items-center space-x-4 mt-2">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">Jobs Management</h1>
+                <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 mt-1 sm:mt-2">
                   <div className="flex items-center text-blue-100">
-                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                    <span className="text-sm font-medium">{totalJobs} Total Jobs</span>
+                    <div className="w-2 h-2 bg-green-400 rounded-full mr-1.5 sm:mr-2"></div>
+                    <span className="text-xs sm:text-sm font-medium">{totalJobs} Total</span>
                   </div>
                   <div className="flex items-center text-blue-100">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full mr-2"></div>
-                    <span className="text-sm font-medium">{jobs.filter(job => job.status === 'active').length} Active</span>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full mr-1.5 sm:mr-2"></div>
+                    <span className="text-xs sm:text-sm font-medium">{jobs.filter(job => job.status === 'active').length} Active</span>
                   </div>
                   <div className="flex items-center text-blue-100">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full mr-2"></div>
-                    <span className="text-sm font-medium">{jobs.filter(job => job.status === 'archived').length} Archived</span>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full mr-1.5 sm:mr-2"></div>
+                    <span className="text-xs sm:text-sm font-medium">{jobs.filter(job => job.status === 'archived').length} Archived</span>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
               {/* Enhanced View Toggle */}
-              <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20">
+              <div className="flex items-center bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl p-1 border border-white/20">
                 <button
                   onClick={() => handleViewModeChange('grid')}
-                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center justify-center flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                     viewMode === 'grid'
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-white hover:bg-white/10'
                   }`}
                 >
-                  <Grid className="h-4 w-4 mr-2" />
-                  Grid View
+                  <Grid className="h-4 w-4 mr-1.5 sm:mr-2" />
+                  <span className="hidden sm:inline">Grid View</span>
+                  <span className="sm:hidden">Grid</span>
                 </button>
                 <button
                   onClick={() => handleViewModeChange('list')}
-                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center justify-center flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md sm:rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
                     viewMode === 'list'
                       ? 'bg-white text-blue-600 shadow-sm'
                       : 'text-white hover:bg-white/10'
                   }`}
                 >
-                  <List className="h-4 w-4 mr-2" />
-                  Reorder Mode
+                  <List className="h-4 w-4 mr-1.5 sm:mr-2" />
+                  <span className="hidden sm:inline">Reorder Mode</span>
+                  <span className="sm:hidden">Reorder</span>
                 </button>
               </div>
 
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center px-6 py-3 bg-white text-blue-600 rounded-xl font-semibold shadow-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200 transform hover:scale-105"
+                className="inline-flex items-center justify-center px-4 sm:px-6 py-2.5 sm:py-3 bg-white text-blue-600 rounded-lg sm:rounded-xl text-sm sm:text-base font-semibold shadow-lg hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-blue-600 transition-all duration-200"
               >
-                <Plus className="h-5 w-5 mr-2" />
-                Create New Job
+                <Plus className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                <span className="hidden sm:inline">Create New Job</span>
+                <span className="sm:hidden">Create Job</span>
               </button>
             </div>
           </div>
@@ -416,43 +419,43 @@ export function JobsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
         {/* Enhanced Search and Filters */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-8 py-6 border-b border-gray-200">
-            <h3 className="text-xl font-bold text-gray-900 flex items-center">
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center mr-3">
-                <Filter className="h-5 w-5 text-white" />
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50 px-4 sm:px-6 md:px-8 py-4 sm:py-5 md:py-6 border-b border-gray-200">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900 flex items-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-600 rounded-lg sm:rounded-xl flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
+                <Filter className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
               Search & Filter Jobs
             </h3>
-            <p className="text-gray-600 mt-1">Find and filter jobs by title, status, or tags</p>
+            <p className="text-xs sm:text-sm text-gray-600 mt-1 ml-10 sm:ml-13">Find and filter jobs by title, status, or tags</p>
           </div>
           
-          <div className="p-8">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="p-4 sm:p-6 md:p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
               {/* Enhanced Search */}
               <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Search Jobs</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Search Jobs</label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
+                  <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                   </div>
                   <input
                     type="text"
-                    placeholder="Search by job title, description, or tags..."
+                    placeholder="Search by title, description..."
                     value={searchInput}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    className="block w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 text-sm border border-gray-300 rounded-lg sm:rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                   />
                 </div>
               </div>
 
               {/* Enhanced Status Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status Filter</label>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Status Filter</label>
                 <select
                   value={jobFilters.status}
                   onChange={(e) => handleStatusFilter(e.target.value as 'all' | 'active' | 'archived')}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-xl leading-5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  className="block w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm border border-gray-300 rounded-lg sm:rounded-xl leading-5 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 >
                   <option value="all">All Status</option>
                   <option value="active">Active Jobs</option>
@@ -464,9 +467,9 @@ export function JobsPage() {
               <div className="flex items-end">
                 <button
                   onClick={handleClearFilters}
-                  className="w-full px-6 py-3 border-2 border-gray-300 rounded-xl text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+                  className="w-full px-4 sm:px-6 py-2.5 sm:py-3 border-2 border-gray-300 rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                 >
-                  Clear All Filters
+                  Clear Filters
                 </button>
               </div>
             </div>
@@ -570,33 +573,33 @@ export function JobsPage() {
               </div>
             ) : (
             /* Enhanced Grid View */
-            <div className="grid grid-cols-1 gap-6 p-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 p-4 sm:gap-5 sm:p-6 md:gap-6 md:p-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {localJobs.map((job) => (
               <div
                 key={job.id}
-                className={`group bg-white rounded-2xl shadow-sm border hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden ${
+                className={`group bg-white rounded-xl sm:rounded-2xl shadow-sm border hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden ${
                   job.status === 'active' 
                     ? 'border-l-4 border-l-green-500 hover:border-green-400' 
                     : 'border-l-4 border-l-gray-400 hover:border-gray-300'
                 }`}
               >
                 {/* Card Header */}
-                <div className={`px-6 py-4 ${
+                <div className={`px-4 py-3 sm:px-5 sm:py-4 md:px-6 ${
                   job.status === 'active' 
                     ? 'bg-gradient-to-r from-green-50 to-emerald-50' 
                     : 'bg-gradient-to-r from-gray-50 to-slate-50'
                 }`}>
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center shadow-sm flex-shrink-0 ${
                         job.status === 'active' 
                           ? 'bg-green-500' 
                           : 'bg-gray-500'
                       }`}>
-                        <Building2 className="w-5 h-5 text-white" />
+                        <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </div>
                       <div>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${
+                        <span className={`inline-flex items-center px-2 py-0.5 sm:py-1 rounded-full text-xs font-semibold ${
                           job.status === 'active'
                             ? 'bg-green-100 text-green-800 border border-green-200'
                             : 'bg-gray-100 text-gray-600 border border-gray-200'
@@ -651,7 +654,7 @@ export function JobsPage() {
                 </div>
 
                 {/* Card Content */}
-                <div className="p-6">
+                <div className="p-4 sm:p-5 md:p-6">
                   <button
                     onClick={() => {
                       console.log('🎯 Job Card Click:', { id: job.id, title: job.title, fullJob: job });
@@ -664,46 +667,46 @@ export function JobsPage() {
                     }}
                     className="text-left w-full group/title"
                   >
-                    <h3 className="font-bold text-lg text-gray-900 group-hover/title:text-blue-600 transition-colors line-clamp-2 mb-3">
+                    <h3 className="font-bold text-base sm:text-lg text-gray-900 group-hover/title:text-blue-600 transition-colors line-clamp-2 mb-2 sm:mb-3">
                       {job.title}
                     </h3>
                   </button>
                   
                   {job.location && (
-                    <div className="flex items-center text-gray-600 mb-3">
-                      <div className="w-4 h-4 mr-2 text-blue-500">
+                    <div className="flex items-center text-gray-600 mb-2 sm:mb-3">
+                      <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-blue-500 flex-shrink-0">
                         <svg fill="currentColor" viewBox="0 0 20 20">
                           <path d="M10 2C7.79 2 6 3.79 6 6c0 3.5 4 8 4 8s4-4.5 4-8c0-2.21-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
                         </svg>
                       </div>
-                      <span className="text-sm font-medium">{job.location}</span>
+                      <span className="text-xs sm:text-sm font-medium truncate">{job.location}</span>
                     </div>
                   )}
                   
                   {job.salaryRange && (
-                    <div className="flex items-center text-gray-600 mb-4">
-                      <div className="w-4 h-4 mr-2 text-green-500">
+                    <div className="flex items-center text-gray-600 mb-3 sm:mb-4">
+                      <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2 text-green-500 flex-shrink-0">
                         <svg fill="currentColor" viewBox="0 0 20 20">
                           <path d="M10 2C5.58 2 2 5.58 2 10s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zm1-9h-1V6h-1v1H8v1h1v1H8v1h1v1h1v-1h1v-1h-1V9h1V8z"/>
                         </svg>
                       </div>
-                      <span className="text-sm font-semibold text-green-600">
+                      <span className="text-xs sm:text-sm font-semibold text-green-600">
                         ${job.salaryRange.min.toLocaleString()} - ${job.salaryRange.max.toLocaleString()}
                       </span>
                     </div>
                   )}
                   
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                     {job.tags.slice(0, 2).map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
+                        className="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200"
                       >
                         {tag}
                       </span>
                     ))}
                     {job.tags.length > 2 && (
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                      <span className="inline-flex items-center px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
                         +{job.tags.length - 2} more
                       </span>
                     )}
@@ -711,7 +714,7 @@ export function JobsPage() {
                 </div>
                 
                 {/* Card Footer */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <div className="px-4 py-3 sm:px-5 sm:py-4 md:px-6 bg-gray-50 border-t border-gray-100">
                   <div className="flex justify-between items-center text-xs text-gray-500">
                     <div className="flex items-center">
                       <span className="font-medium">Order #{job.order}</span>

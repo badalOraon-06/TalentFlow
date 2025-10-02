@@ -61,11 +61,11 @@ export function Modal({
   if (!isOpen) return null;
 
   const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl',
-    full: 'max-w-full m-4',
+    sm: 'max-w-[95vw] sm:max-w-md',
+    md: 'max-w-[95vw] sm:max-w-lg',
+    lg: 'max-w-[95vw] sm:max-w-2xl',
+    xl: 'max-w-[95vw] sm:max-w-4xl',
+    full: 'max-w-full m-2 sm:m-4',
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -85,27 +85,27 @@ export function Modal({
         aria-labelledby="modal-title"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200">
+          <h2 id="modal-title" className="text-base sm:text-lg font-semibold text-gray-900 pr-2">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors flex-shrink-0"
             aria-label="Close modal"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4 flex-1 overflow-auto">
+        <div className="p-3 sm:p-4 md:p-6 flex-1 overflow-auto">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+          <div className="p-3 sm:p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
             {footer}
           </div>
         )}
@@ -145,18 +145,18 @@ export function ConfirmModal({
   };
 
   const footer = (
-    <div className="flex space-x-3">
+    <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
       <button
         onClick={onClose}
         disabled={loading}
-        className="btn btn-secondary"
+        className="btn btn-secondary w-full sm:w-auto"
       >
         {cancelText}
       </button>
       <button
         onClick={onConfirm}
         disabled={loading}
-        className={typeStyles[type]}
+        className={`${typeStyles[type]} w-full sm:w-auto`}
       >
         {loading ? 'Loading...' : confirmText}
       </button>
@@ -173,7 +173,7 @@ export function ConfirmModal({
       closeOnBackdrop={!loading}
       closeOnEsc={!loading}
     >
-      <p className="text-gray-600">{message}</p>
+      <p className="text-sm sm:text-base text-gray-600">{message}</p>
     </Modal>
   );
 }

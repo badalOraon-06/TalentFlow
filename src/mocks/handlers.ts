@@ -4,11 +4,11 @@ import type { JobCreateInput, JobUpdateInput, CandidateCreateInput, CandidateUpd
 
 // Utility function to simulate network delay and occasional errors
 async function simulateNetwork() {
-  // Random delay between 100-500ms for better UX
+  // Random delay between 100-500ms for faster UX
   await delay(100 + Math.random() * 400);
   
-  // Reduced to 1% chance of network error for better reliability
-  if (Math.random() < 0.01) {
+  // 0.1% chance of network error (extremely rare, for realistic simulation)
+  if (Math.random() < 0.001) {
     throw new Error('Network error: Request failed');
   }
 }

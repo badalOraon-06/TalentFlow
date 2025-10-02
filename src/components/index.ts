@@ -12,9 +12,6 @@ export * from './VirtualizedList';
 // Drag and Drop
 export * from './DragAndDrop';
 
-// Search and Filters
-export * from './SearchAndFilter';
-
 // Notes System
 export * from './NotesComponent';
 
@@ -35,3 +32,6 @@ export * from './SimpleToast';
 // Notification Components
 export * from './SimpleNotificationBell';
 export * from './UserMenu';
+
+// Mobile Navigation
+export * from './MobileNav';

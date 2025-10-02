@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Link } from 'react
 import { Building2, Users, ClipboardList, Loader2, BarChart3 } from 'lucide-react';
 import { initializeDatabase } from './lib/database';
 import { ProtectedRoute, PublicRoute } from './components';
+import { MobileNav } from './components/MobileNav';
 import { SimpleToastProvider } from './components/SimpleToast';
 import { SimpleNotificationBell } from './components/SimpleNotificationBell';
 import { MSWHealthCheck } from './components/MSWHealthCheck';
@@ -23,26 +24,26 @@ function AppContent() {
       {/* Header - Hidden on auth pages */}
       {!isAuthPage && (
         <header className="bg-white/95 backdrop-blur-xl shadow-lg border-b border-gray-200/50 sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-20">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16 sm:h-20">
               {/* Logo Section */}
               <div className="flex items-center group">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <Building2 className="h-7 w-7 text-white" />
+                <div className="w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                  <Building2 className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 text-white" />
                 </div>
-                <div className="ml-4">
-                  <span className="text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
+                <div className="ml-2 sm:ml-3 md:ml-4">
+                  <span className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
                     TalentFlow
                   </span>
-                  <div className="text-xs font-medium text-gray-500 tracking-wide">
+                  <div className="hidden sm:block text-xs font-medium text-gray-500 tracking-wide">
                     Hiring Excellence Platform
                   </div>
                 </div>
               </div>
               
-              {/* Navigation */}
+              {/* Navigation - Hidden on mobile, shown on desktop */}
               {isAuthenticated && (
-                <nav className="flex items-center space-x-2">
+                <nav className="hidden lg:flex items-center space-x-2">
                   <Link 
                     to="/dashboard" 
                     className="group flex items-center px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 transition-all duration-300 hover:shadow-lg hover:scale-105"
@@ -75,23 +76,28 @@ function AppContent() {
               )}
 
               {/* Action Section */}
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
                 {isAuthenticated ? (
                   <>
-                    <SimpleNotificationBell />
-                    <UserMenu />
+                    {/* Desktop: Show notifications and user menu */}
+                    <div className="hidden lg:flex items-center space-x-3">
+                      <SimpleNotificationBell />
+                      <UserMenu />
+                    </div>
+                    {/* Mobile: Show only mobile nav button */}
+                    <MobileNav />
                   </>
                 ) : (
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
                     <Link
                       to="/login"
-                      className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                      className="px-3 py-2 sm:px-4 text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
                     >
                       Sign In
                     </Link>
                     <Link
                       to="/signup"
-                      className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
+                      className="px-3 py-2 sm:px-4 bg-blue-600 text-white text-xs sm:text-sm font-medium rounded-lg sm:rounded-xl hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
                     >
                       Sign Up
                     </Link>
@@ -104,7 +110,7 @@ function AppContent() {
       )}
 
       {/* Main Content */}
-      <main className={isAuthPage ? '' : 'pt-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'}>
+      <main className={isAuthPage ? '' : 'pt-4 sm:pt-6 md:pt-8 max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8'}>
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={

@@ -166,8 +166,8 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
   const error = createJobHook.error || updateJobHook.error;
 
   const footer = (
-    <div className="flex justify-end space-x-3">
-      <Button variant="secondary" onClick={handleClose} disabled={isLoading}>
+    <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
+      <Button variant="secondary" onClick={handleClose} disabled={isLoading} className="w-full sm:w-auto">
         Cancel
       </Button>
       <Button
@@ -175,6 +175,7 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
         form="job-form"
         loading={isLoading}
         disabled={isLoading}
+        className="w-full sm:w-auto"
       >
         {isEditing ? 'Update Job' : 'Create Job'}
       </Button>
@@ -191,14 +192,14 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
       closeOnBackdrop={!isLoading}
       closeOnEsc={!isLoading}
     >
-      <form id="job-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form id="job-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-3 sm:px-4 py-2 sm:py-3 rounded text-sm sm:text-base">
             {error}
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {/* Job Title */}
           <div>
             <Controller
@@ -282,7 +283,7 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
 
         {/* Tags */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
             Skills & Tags <span className="text-red-500">*</span>
           </label>
           <div className="space-y-2">
@@ -293,25 +294,25 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Add a skill or tag..."
-                className="flex-1 input"
+                className="flex-1 input text-sm sm:text-base"
                 maxLength={20}
               />
-              <Button type="button" variant="secondary" onClick={handleAddTag}>
+              <Button type="button" variant="secondary" onClick={handleAddTag} className="px-3 sm:px-4">
                 Add
               </Button>
             </div>
             {watchedTags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {watchedTags.map((tag) => (
                   <span
                     key={tag}
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                    className="inline-flex items-center px-2 sm:px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(tag)}
-                      className="ml-1 text-blue-600 hover:text-blue-800"
+                      className="ml-1 text-blue-600 hover:text-blue-800 text-sm sm:text-base"
                     >
                       ×
                     </button>
@@ -320,7 +321,7 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
               </div>
             )}
             {errors.tags && (
-              <p className="text-sm text-red-600">{errors.tags.message}</p>
+              <p className="text-xs sm:text-sm text-red-600">{errors.tags.message}</p>
             )}
           </div>
         </div>
