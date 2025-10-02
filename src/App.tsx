@@ -5,6 +5,7 @@ import { initializeDatabase } from './lib/database';
 import { ProtectedRoute, PublicRoute } from './components';
 import { SimpleToastProvider } from './components/SimpleToast';
 import { SimpleNotificationBell } from './components/SimpleNotificationBell';
+import { MSWHealthCheck } from './components/MSWHealthCheck';
 import { UserMenu } from './components/UserMenu';
 import { useAuth } from './store/authStore';
 import { JobsPage, JobDetail, LoginPage, SignupPage, AssessmentsPage, AssessmentTakingPage, AssessmentCompletedPage, AssessmentResponsesPage, Dashboard, CandidatesPage, CandidateProfile } from './pages';
@@ -225,6 +226,7 @@ function App() {
     <SimpleToastProvider>
       <Router>
         <AppContent />
+        <MSWHealthCheck />
       </Router>
     </SimpleToastProvider>
   );

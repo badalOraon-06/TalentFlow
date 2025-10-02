@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { AuthUser, AuthState, LoginCredentials, SignupData, UserRole, RolePermissions } from '../types';
+import { fetchWithMSWRetry } from '../lib/mswRecovery';
 
 interface AuthStore extends AuthState {
   // Actions
@@ -49,8 +50,8 @@ export const useAuthStore = create<AuthStore>()(
         try {
           console.log('🔐 Attempting login for:', credentials.email);
           
-          // Make API call to login endpoint
-          const response = await fetch('/api/auth/login', {
+          // Make API call to login endpoint with MSW retry mechanism
+          const response = await fetchWithMSWRetry('/api/auth/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -67,7 +68,7 @@ export const useAuthStore = create<AuthStore>()(
           const contentType = response.headers.get('content-type');
           if (!contentType || !contentType.includes('application/json')) {
             console.error('❌ Response is not JSON:', contentType);
-            throw new Error(`Server returned ${response.status}: ${response.statusText}. MSW may not be running.`);
+            throw new Error(`Server returned ${response.status}: ${response.statusText}. MSW may not be running. Please refresh the page.`);
           }
 
           const data = await response.json();
@@ -118,8 +119,8 @@ export const useAuthStore = create<AuthStore>()(
             throw new Error('Passwords do not match');
           }
 
-          // Make API call to signup endpoint
-          const response = await fetch('/api/auth/signup', {
+          // Make API call to signup endpoint with MSW retry mechanism
+          const response = await fetchWithMSWRetry('/api/auth/signup', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -139,7 +140,7 @@ export const useAuthStore = create<AuthStore>()(
           const contentType = response.headers.get('content-type');
           if (!contentType || !contentType.includes('application/json')) {
             console.error('❌ Response is not JSON:', contentType);
-            throw new Error(`Server returned ${response.status}: ${response.statusText}. MSW may not be running.`);
+            throw new Error(`Server returned ${response.status}: ${response.statusText}. MSW may not be running. Please refresh the page.`);
           }
 
           const responseData = await response.json();
