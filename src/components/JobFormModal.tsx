@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -37,7 +37,7 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
     watch,
     setValue,
@@ -62,6 +62,35 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
   });
 
   const watchedTags = watch('tags');
+
+  // Reset form when job prop changes or modal opens
+  useEffect(() => {
+    if (isOpen) {
+      console.log('🔄 JobFormModal: Resetting form with job data:', job);
+      if (job) {
+        // Editing mode - populate with job data
+        reset({
+          title: job.title,
+          slug: job.slug,
+          location: job.location || '',
+          description: job.description || '',
+          tags: job.tags || [],
+          status: job.status
+        });
+      } else {
+        // Create mode - clear form
+        reset({
+          title: '',
+          slug: '',
+          location: '',
+          description: '',
+          tags: [],
+          status: 'active'
+        });
+      }
+      setTagInput('');
+    }
+  }, [isOpen, job, reset]);
 
   // Auto-generate slug from title
   const generateSlug = (title: string) => {

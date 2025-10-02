@@ -43,7 +43,7 @@ export function JobsPage() {
   
   const { data: jobsData, loading, error } = useJobs(effectiveFilters);
   const updateJobHook = useUpdateJob();
-  const { reorderJobsOptimistically, loading: reorderLoading, error: reorderError, isRollingBack } = useOptimisticJobReorder();
+  const { loading: reorderLoading, error: reorderError, isRollingBack } = useOptimisticJobReorder();
   const { showToast } = useSimpleToast();
   
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -66,6 +66,11 @@ export function JobsPage() {
   // Update local jobs when data changes
   useEffect(() => {
     if (jobsData?.jobs) {
+      console.log('📊 JobsPage: Jobs data updated', {
+        count: jobsData.jobs.length,
+        firstJob: jobsData.jobs[0],
+        hasIds: jobsData.jobs.every(j => !!j.id)
+      });
       setLocalJobs(jobsData.jobs);
     }
   }, [jobsData?.jobs]);
@@ -105,12 +110,12 @@ export function JobsPage() {
     updateJobFilters({ search: '', status: 'all', page: 1 });
   };
 
-  const handleJobCreated = (job: Job) => {
+  const handleJobCreated = () => {
     // Refresh the jobs list by updating the page (force refresh)
     updateJobFilters({ page: jobFilters.page });
   };
 
-  const handleJobUpdated = (job: Job) => {
+  const handleJobUpdated = () => {
     // Refresh the jobs list
     updateJobFilters({ page: jobFilters.page });
     setEditingJob(null);
@@ -154,6 +159,11 @@ export function JobsPage() {
   };
 
   const handleEditJob = (job: Job) => {
+    console.log('✏️ JobsPage: Opening edit modal for job:', {
+      id: job.id,
+      title: job.title,
+      fullJob: job
+    });
     setEditingJob(job);
     setJobMenuOpen(null);
   };
@@ -643,7 +653,15 @@ export function JobsPage() {
                 {/* Card Content */}
                 <div className="p-6">
                   <button
-                    onClick={() => navigate(`/jobs/${job.id}`)}
+                    onClick={() => {
+                      console.log('🎯 Job Card Click:', { id: job.id, title: job.title, fullJob: job });
+                      if (!job.id) {
+                        console.error('❌ Job ID is missing!', job);
+                        showToast('Error: Job ID is missing', 'error');
+                        return;
+                      }
+                      navigate(`/jobs/${job.id}`);
+                    }}
                     className="text-left w-full group/title"
                   >
                     <h3 className="font-bold text-lg text-gray-900 group-hover/title:text-blue-600 transition-colors line-clamp-2 mb-3">

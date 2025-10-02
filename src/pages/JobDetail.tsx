@@ -34,7 +34,7 @@ import { useSimpleToast } from '../components/SimpleToast';
 import type { Job } from '../types';
 
 export function JobDetail() {
-  const { jobId } = useParams<{ jobId: string }>();
+  const { id: jobId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,17 +52,28 @@ export function JobDetail() {
   const { showToast } = useSimpleToast();
 
   useEffect(() => {
+    console.log('🔍 JobDetail: Checking jobId:', jobId);
+    
     if (!jobId) {
+      console.error('❌ JobDetail: No job ID provided');
       setError('No job ID provided');
       setLoading(false);
       return;
     }
 
     if (jobsData?.jobs) {
+      console.log('🔍 JobDetail: Searching for job in data:', {
+        jobId,
+        totalJobs: jobsData.jobs.length,
+        jobIds: jobsData.jobs.map(j => j.id)
+      });
+      
       const foundJob = jobsData.jobs.find(j => j.id === jobId);
       if (foundJob) {
+        console.log('✅ JobDetail: Job found:', foundJob);
         setJob(foundJob);
       } else {
+        console.error('❌ JobDetail: Job not found with ID:', jobId);
         setError('Job not found');
       }
       setLoading(false);

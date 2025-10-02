@@ -4,11 +4,11 @@ import type { JobCreateInput, JobUpdateInput, CandidateCreateInput, CandidateUpd
 
 // Utility function to simulate network delay and occasional errors
 async function simulateNetwork() {
-  // Random delay between 200-1200ms
-  await delay(200 + Math.random() * 1000);
+  // Random delay between 100-500ms for better UX
+  await delay(100 + Math.random() * 400);
   
-  // 5-10% chance of network error for write operations
-  if (Math.random() < 0.075) {
+  // Reduced to 1% chance of network error for better reliability
+  if (Math.random() < 0.01) {
     throw new Error('Network error: Request failed');
   }
 }
@@ -122,18 +122,10 @@ export const jobHandlers = [
     }
   }),
 
-  // PATCH /jobs/:id/reorder - Reorder jobs (with occasional failures for testing)
+  // PATCH /jobs/:id/reorder - Reorder jobs
   http.patch('/api/jobs/:id/reorder', async ({ request }) => {
     try {
       await simulateNetwork();
-      
-      // Higher chance of failure for reorder operations (10-15%)
-      if (Math.random() < 0.125) {
-        return HttpResponse.json(
-          { success: false, message: 'Reorder operation failed' },
-          { status: 500 }
-        );
-      }
       
       const { fromOrder, toOrder } = await request.json() as { fromOrder: number; toOrder: number };
       console.log(`🔄 MSW: Reordering jobs from ${fromOrder} to ${toOrder}`);

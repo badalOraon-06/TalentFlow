@@ -77,21 +77,20 @@ function CandidatesSection({
 //Main CandidatesPage component
 export function CandidatesPage() {
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
-  const navigate = useNavigate();
   const { showToast } = useSimpleToast();
   const { data: candidatesData, loading, error, refetch } = useCandidates({ page: 1, pageSize: 1000 });
   const { updateCandidate } = useUpdateCandidate();
 
-  const candidates = candidatesData?.candidates || [];
-  console.log('🎯 CandidatesPage candidates:', candidates.length);
-
   // Simplified state management without useOptimistic for better compatibility
   const [localCandidates, setLocalCandidates] = useState<Candidate[]>([]);
   
-  // Update local candidates when data changes
+  // Update local candidates when data changes - use candidatesData directly to avoid infinite loop
   useEffect(() => {
-    setLocalCandidates(candidates);
-  }, [candidates]);
+    if (candidatesData?.candidates) {
+      console.log('🎯 CandidatesPage updating candidates:', candidatesData.candidates.length);
+      setLocalCandidates(candidatesData.candidates);
+    }
+  }, [candidatesData]);
 
   const handleStageChange = async (candidateId: string, newStage: CandidateStage) => {
     console.log('📝 Starting stage change:', { candidateId, newStage });
@@ -134,10 +133,7 @@ export function CandidatesPage() {
       // Show error toast notification
       showToast(`Failed to update ${candidateName}'s stage. Please try again.`, 'error');
       
-      // Revert optimistic update on error
-      setLocalCandidates(candidates);
-      
-      // Only refetch on error to get fresh data
+      // Refetch on error to get fresh data and revert optimistic update
       await refetch();
     }
   };
