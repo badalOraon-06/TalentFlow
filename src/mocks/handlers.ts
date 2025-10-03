@@ -3,13 +3,17 @@ import { dbOperations } from '../lib/database';
 import type { JobCreateInput, JobUpdateInput, CandidateCreateInput, CandidateUpdateInput, LoginCredentials, SignupData, AuthUser } from '../types';
 
 // Utility function to simulate network delay and occasional errors
-async function simulateNetwork() {
-  // Random delay between 100-500ms for faster UX
-  await delay(100 + Math.random() * 400);
+async function simulateNetwork(isWriteOperation: boolean = false) {
+  // Random delay between 200-1200ms as per assignment requirements
+  await delay(200 + Math.random() * 1000);
   
-  // 0.1% chance of network error (extremely rare, for realistic simulation)
-  if (Math.random() < 0.001) {
-    throw new Error('Network error: Request failed');
+  // 5-10% chance of error on write operations (POST, PATCH, DELETE)
+  // No artificial errors on read operations (GET) for better UX
+  if (isWriteOperation) {
+    const errorRate = 0.05 + Math.random() * 0.05; // 5-10% error rate
+    if (Math.random() < errorRate) {
+      throw new Error('Network error: Request failed');
+    }
   }
 }
 
@@ -73,7 +77,7 @@ export const jobHandlers = [
 
   // POST /jobs - Create job
   http.post('/api/jobs', async ({ request }) => {
-    await simulateNetwork();
+    await simulateNetwork(true); // Write operation
     
     try {
       const jobData = await request.json() as JobCreateInput;
@@ -103,7 +107,7 @@ export const jobHandlers = [
 
   // PATCH /jobs/:id - Update job
   http.patch('/api/jobs/:id', async ({ params, request }) => {
-    await simulateNetwork();
+    await simulateNetwork(true); // Write operation
     
     try {
       const updates = await request.json() as JobUpdateInput;
@@ -127,7 +131,7 @@ export const jobHandlers = [
     console.log('🎯 MSW INTERCEPTED: /api/jobs/:id/reorder', params.id);
     
     try {
-      await simulateNetwork();
+      await simulateNetwork(true); // Write operation
       
       const { fromOrder, toOrder } = await request.json() as { fromOrder: number; toOrder: number };
       console.log(`🔄 MSW: Reordering jobs from ${fromOrder} to ${toOrder}`);
@@ -148,7 +152,7 @@ export const jobHandlers = [
 
   // DELETE /jobs/:id - Delete job
   http.delete('/api/jobs/:id', async ({ params }) => {
-    await simulateNetwork();
+    await simulateNetwork(true); // Write operation
     
     try {
       await dbOperations.deleteJob(params.id as string);
@@ -223,7 +227,7 @@ export const candidateHandlers = [
 
   // POST /candidates - Create candidate
   http.post('/api/candidates', async ({ request }) => {
-    await simulateNetwork();
+    await simulateNetwork(true); // Write operation
     
     try {
       const candidateData = await request.json() as CandidateCreateInput;
@@ -249,7 +253,7 @@ export const candidateHandlers = [
 
   // PATCH /candidates/:id - Update candidate (mainly for stage changes)
   http.patch('/api/candidates/:id', async ({ params, request }) => {
-    await simulateNetwork();
+    await simulateNetwork(true); // Write operation
     
     try {
       const updates = await request.json() as CandidateUpdateInput;
@@ -273,7 +277,7 @@ export const candidateHandlers = [
 
   // DELETE /candidates/:id - Delete candidate
   http.delete('/api/candidates/:id', async ({ params }) => {
-    await simulateNetwork();
+    await simulateNetwork(true); // Write operation
     
     try {
       await dbOperations.deleteCandidate(params.id as string);
@@ -306,7 +310,7 @@ export const assessmentHandlers = [
 
   // PUT /assessments/:jobId - Create or update assessment
   http.put('/api/assessments/:jobId', async ({ params, request }) => {
-    await simulateNetwork();
+    await simulateNetwork(true); // Write operation
     
     try {
       const assessmentData = await request.json() as any;
@@ -335,7 +339,7 @@ export const assessmentHandlers = [
 
   // POST /assessments/:jobId/submit - Submit assessment response
   http.post('/api/assessments/:jobId/submit', async ({ params, request }) => {
-    await simulateNetwork();
+    await simulateNetwork(true); // Write operation
     
     try {
       const responseData = await request.json() as any;
@@ -360,7 +364,7 @@ export const assessmentHandlers = [
 export const authHandlers = [
   // POST /auth/login - User login
   http.post('/api/auth/login', async ({ request }) => {
-    await simulateNetwork();
+    await simulateNetwork(true); // Write operation
     
     try {
       const credentials = await request.json() as LoginCredentials;
@@ -396,7 +400,7 @@ export const authHandlers = [
 
   // POST /auth/signup - User registration
   http.post('/api/auth/signup', async ({ request }) => {
-    await simulateNetwork();
+    await simulateNetwork(true); // Write operation
     
     try {
       const signupData = await request.json() as SignupData;
@@ -484,7 +488,7 @@ const notificationHandlers = [
   // Create notification
   http.post('/api/notifications', async ({ request }) => {
     try {
-      await simulateNetwork();
+      await simulateNetwork(true); // Write operation
       const data = await request.json() as any;
       const result = await dbOperations.createNotification(data);
       return HttpResponse.json({ success: true, data: result });
@@ -496,7 +500,7 @@ const notificationHandlers = [
   // Mark notification as read
   http.patch('/api/notifications/:id/read', async ({ params }) => {
     try {
-      await simulateNetwork();
+      await simulateNetwork(true); // Write operation
       const id = String(params.id);
       await dbOperations.markNotificationAsRead(id);
       return HttpResponse.json({ success: true, message: 'Notification marked as read' });
@@ -508,7 +512,7 @@ const notificationHandlers = [
   // Delete notification
   http.delete('/api/notifications/:id', async ({ params }) => {
     try {
-      await simulateNetwork();
+      await simulateNetwork(true); // Write operation
       const id = String(params.id);
       await dbOperations.deleteNotification(id);
       return HttpResponse.json({ success: true, message: 'Notification deleted' });
@@ -531,7 +535,7 @@ const notificationHandlers = [
   // Mark all notifications as read
   http.patch('/api/notifications/mark-all-read', async () => {
     try {
-      await simulateNetwork();
+      await simulateNetwork(true); // Write operation
       await dbOperations.markAllNotificationsAsRead('admin'); // Using default admin user
       return HttpResponse.json({ success: true, message: 'All notifications marked as read' });
     } catch (error) {
