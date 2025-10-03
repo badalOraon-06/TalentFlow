@@ -123,12 +123,15 @@ export const jobHandlers = [
   }),
 
   // PATCH /jobs/:id/reorder - Reorder jobs
-  http.patch('/api/jobs/:id/reorder', async ({ request }) => {
+  http.patch('/api/jobs/:id/reorder', async ({ params, request }) => {
+    console.log('🎯 MSW INTERCEPTED: /api/jobs/:id/reorder', params.id);
+    
     try {
       await simulateNetwork();
       
       const { fromOrder, toOrder } = await request.json() as { fromOrder: number; toOrder: number };
       console.log(`🔄 MSW: Reordering jobs from ${fromOrder} to ${toOrder}`);
+      console.log(`📦 Job ID: ${params.id}`);
       
       await dbOperations.reorderJobs(fromOrder, toOrder);
       

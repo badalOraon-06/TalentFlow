@@ -8,11 +8,13 @@ async function enableMocking() {
   // Enable MSW in both development AND production since this is a front-end only app
   // that uses MSW to simulate a backend API as per the assignment requirements
   console.log('🔧 Initializing MSW for API mocking...');
+  console.log('📦 Environment:', import.meta.env.MODE);
+  console.log('🌐 Current URL:', window.location.href);
   
   const { worker } = await import('./mocks/browser')
   
   await worker.start({
-    onUnhandledRequest: 'bypass',
+    onUnhandledRequest: 'warn', // Warn about unhandled requests
     serviceWorker: {
       url: '/mockServiceWorker.js',
       // Add service worker options for better reliability
@@ -20,12 +22,11 @@ async function enableMocking() {
         scope: '/',
       }
     },
-    // Add quiet mode to reduce console noise in production
     quiet: false,
   });
   
   console.log('✅ MSW initialized and ready to intercept API requests');
-  console.log('📦 Environment:', import.meta.env.MODE);
+  console.log('🎯 MSW will intercept all /api/* requests');
   
   // Keep service worker alive by checking its state periodically
   setInterval(async () => {
