@@ -1,4 +1,7 @@
 // Job related types
+export type JobType = 'full-time' | 'part-time' | 'contract' | 'freelance' | 'internship';
+export type WorkType = 'remote' | 'hybrid' | 'onsite';
+
 export interface Job {
   id: string;
   title: string;
@@ -9,6 +12,8 @@ export interface Job {
   description?: string;
   requirements?: string[];
   location?: string;
+  jobType?: JobType;
+  workType?: WorkType;
   salaryRange?: {
     min: number;
     max: number;
@@ -24,6 +29,8 @@ export interface JobCreateInput {
   requirements?: string[];
   location?: string;
   tags: string[];
+  jobType?: JobType;
+  workType?: WorkType;
   salaryRange?: {
     min: number;
     max: number;

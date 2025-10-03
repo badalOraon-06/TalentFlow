@@ -7,14 +7,29 @@ import { useCreateJob, useUpdateJob } from '../hooks/useApiDirect';
 import { useSimpleToast } from './SimpleToast';
 import type { Job } from '../types';
 
-// Simplified validation schema to match current API
+// Complete validation schema with all job fields
 const jobSchema = z.object({
   title: z.string().min(1, 'Job title is required').max(100, 'Title must be 100 characters or less'),
   slug: z.string().min(1, 'Slug is required').regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens'),
   location: z.string().optional(),
   description: z.string().min(10, 'Description must be at least 10 characters').optional(),
+  requirements: z.array(z.string()).optional(),
   tags: z.array(z.string()).min(1, 'At least one tag is required').max(10, 'Maximum 10 tags allowed'),
+  jobType: z.enum(['full-time', 'part-time', 'contract', 'freelance', 'internship']).optional(),
+  workType: z.enum(['remote', 'hybrid', 'onsite']).optional(),
+  salaryMin: z.number().min(0, 'Minimum salary must be positive').optional(),
+  salaryMax: z.number().min(0, 'Maximum salary must be positive').optional(),
+  salaryCurrency: z.string().optional(),
   status: z.enum(['active', 'archived'])
+}).refine((data) => {
+  // Ensure max salary is greater than min if both are provided
+  if (data.salaryMin && data.salaryMax) {
+    return data.salaryMax >= data.salaryMin;
+  }
+  return true;
+}, {
+  message: 'Maximum salary must be greater than or equal to minimum salary',
+  path: ['salaryMax']
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
@@ -28,6 +43,7 @@ interface JobFormModalProps {
 
 export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalProps) {
   const [tagInput, setTagInput] = useState('');
+  const [requirementInput, setRequirementInput] = useState('');
   const isEditing = !!job;
   const { showToast } = useSimpleToast();
 
@@ -49,19 +65,32 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
       slug: job.slug,
       location: job.location || '',
       description: job.description || '',
+      requirements: job.requirements || [],
       tags: job.tags || [],
+      jobType: job.jobType,
+      workType: job.workType,
+      salaryMin: job.salaryRange?.min,
+      salaryMax: job.salaryRange?.max,
+      salaryCurrency: job.salaryRange?.currency || 'USD',
       status: job.status
     } : {
       title: '',
       slug: '',
       location: '',
       description: '',
+      requirements: [],
       tags: [],
+      jobType: undefined,
+      workType: undefined,
+      salaryMin: undefined,
+      salaryMax: undefined,
+      salaryCurrency: 'USD',
       status: 'active'
     }
   });
 
   const watchedTags = watch('tags');
+  const watchedRequirements = watch('requirements');
 
   // Reset form when job prop changes or modal opens
   useEffect(() => {
@@ -74,7 +103,13 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
           slug: job.slug,
           location: job.location || '',
           description: job.description || '',
+          requirements: job.requirements || [],
           tags: job.tags || [],
+          jobType: job.jobType,
+          workType: job.workType,
+          salaryMin: job.salaryRange?.min,
+          salaryMax: job.salaryRange?.max,
+          salaryCurrency: job.salaryRange?.currency || 'USD',
           status: job.status
         });
       } else {
@@ -84,11 +119,18 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
           slug: '',
           location: '',
           description: '',
+          requirements: [],
           tags: [],
+          jobType: undefined,
+          workType: undefined,
+          salaryMin: undefined,
+          salaryMax: undefined,
+          salaryCurrency: 'USD',
           status: 'active'
         });
       }
       setTagInput('');
+      setRequirementInput('');
     }
   }, [isOpen, job, reset]);
 
@@ -129,14 +171,46 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
     }
   };
 
+  // Handle requirement input
+  const handleAddRequirement = () => {
+    const requirement = requirementInput.trim();
+    if (requirement && !watchedRequirements?.includes(requirement)) {
+      setValue('requirements', [...(watchedRequirements || []), requirement]);
+      setRequirementInput('');
+    }
+  };
+
+  const handleRemoveRequirement = (requirementToRemove: string) => {
+    setValue('requirements', (watchedRequirements || []).filter(req => req !== requirementToRemove));
+  };
+
+  const handleRequirementKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddRequirement();
+    }
+  };
+
   const onSubmit = async (data: JobFormData) => {
     try {
-      const jobData = {
+      const jobData: any = {
         title: data.title,
         description: data.description,
+        requirements: data.requirements,
         tags: data.tags,
-        location: data.location
+        location: data.location,
+        jobType: data.jobType,
+        workType: data.workType
       };
+
+      // Add salary range if provided
+      if (data.salaryMin || data.salaryMax) {
+        jobData.salaryRange = {
+          min: data.salaryMin || 0,
+          max: data.salaryMax || 0,
+          currency: data.salaryCurrency || 'USD'
+        };
+      }
 
       let result;
       if (isEditing && job) {
@@ -159,6 +233,7 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
   const handleClose = () => {
     reset();
     setTagInput('');
+    setRequirementInput('');
     onClose();
   };
 
@@ -256,6 +331,67 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
           />
         </div>
 
+        {/* Job Type and Work Type */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <Controller
+              name="jobType"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                    Job Type
+                  </label>
+                  <select
+                    {...field}
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(e.target.value || undefined)}
+                    className="input"
+                  >
+                    <option value="">Select job type</option>
+                    <option value="full-time">Full-time</option>
+                    <option value="part-time">Part-time</option>
+                    <option value="contract">Contract</option>
+                    <option value="freelance">Freelance</option>
+                    <option value="internship">Internship</option>
+                  </select>
+                  {errors.jobType && (
+                    <p className="text-xs sm:text-sm text-red-600">{errors.jobType.message}</p>
+                  )}
+                </div>
+              )}
+            />
+          </div>
+
+          <div>
+            <Controller
+              name="workType"
+              control={control}
+              render={({ field }) => (
+                <div className="space-y-1">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                    Work Type
+                  </label>
+                  <select
+                    {...field}
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(e.target.value || undefined)}
+                    className="input"
+                  >
+                    <option value="">Select work type</option>
+                    <option value="remote">Remote</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="onsite">Onsite</option>
+                  </select>
+                  {errors.workType && (
+                    <p className="text-xs sm:text-sm text-red-600">{errors.workType.message}</p>
+                  )}
+                </div>
+              )}
+            />
+          </div>
+        </div>
+
         {/* Status */}
         <div>
           <Controller
@@ -341,6 +477,117 @@ export function JobFormModal({ isOpen, onClose, job, onSuccess }: JobFormModalPr
               />
             )}
           />
+        </div>
+
+        {/* Requirements */}
+        <div>
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            Requirements
+          </label>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={requirementInput}
+                onChange={(e) => setRequirementInput(e.target.value)}
+                onKeyPress={handleRequirementKeyPress}
+                placeholder="Add a requirement..."
+                className="flex-1 input text-sm sm:text-base"
+              />
+              <Button type="button" variant="secondary" onClick={handleAddRequirement} className="px-3 sm:px-4">
+                Add
+              </Button>
+            </div>
+            {watchedRequirements && watchedRequirements.length > 0 && (
+              <div className="space-y-2">
+                {watchedRequirements.map((requirement, index) => (
+                  <div
+                    key={index}
+                    className="flex items-start gap-2 p-2 sm:p-3 bg-gray-50 rounded-lg border border-gray-200"
+                  >
+                    <span className="flex-1 text-xs sm:text-sm text-gray-700">{requirement}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveRequirement(requirement)}
+                      className="text-red-500 hover:text-red-700 text-lg font-bold leading-none"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {errors.requirements && (
+              <p className="text-xs sm:text-sm text-red-600">{errors.requirements.message}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Salary Range */}
+        <div>
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
+            Salary Range
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div>
+              <Controller
+                name="salaryMin"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    type="number"
+                    label="Minimum"
+                    placeholder="50000"
+                    error={errors.salaryMin?.message}
+                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                    value={field.value || ''}
+                  />
+                )}
+              />
+            </div>
+            <div>
+              <Controller
+                name="salaryMax"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    type="number"
+                    label="Maximum"
+                    placeholder="100000"
+                    error={errors.salaryMax?.message}
+                    onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                    value={field.value || ''}
+                  />
+                )}
+              />
+            </div>
+            <div>
+              <Controller
+                name="salaryCurrency"
+                control={control}
+                render={({ field }) => (
+                  <div className="space-y-1">
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700">
+                      Currency
+                    </label>
+                    <select
+                      {...field}
+                      className="input"
+                    >
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                      <option value="GBP">GBP (£)</option>
+                      <option value="INR">INR (₹)</option>
+                      <option value="CAD">CAD ($)</option>
+                      <option value="AUD">AUD ($)</option>
+                    </select>
+                  </div>
+                )}
+              />
+            </div>
+          </div>
         </div>
       </form>
     </Modal>

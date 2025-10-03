@@ -244,20 +244,24 @@ export function JobDetail() {
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center text-gray-600">
-                    <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-purple-500 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-medium text-gray-900">Full-time</p>
-                      <p className="text-xs text-gray-500">Job Type</p>
+                  {job.jobType && (
+                    <div className="flex items-center text-gray-600">
+                      <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-purple-500 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 capitalize">{job.jobType.replace('-', ' ')}</p>
+                        <p className="text-xs text-gray-500">Job Type</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <Globe className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-orange-500 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm font-medium text-gray-900">Remote OK</p>
-                      <p className="text-xs text-gray-500">Work Style</p>
+                  )}
+                  {job.workType && (
+                    <div className="flex items-center text-gray-600">
+                      <Globe className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-orange-500 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 capitalize">{job.workType}</p>
+                        <p className="text-xs text-gray-500">Work Type</p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 bg-gray-50 rounded-lg p-2 sm:p-3">
