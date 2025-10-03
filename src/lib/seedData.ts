@@ -612,11 +612,12 @@ export function generateAssessmentResponses(candidates: Candidate[], assessments
   
   // Generate responses for some candidates and assessments
   assessments.forEach(assessment => {
-    // Randomly select 30-70% of candidates to have submitted responses
+    // IMPORTANT: Only get candidates who applied to THIS job
+    const jobCandidates = candidates.filter(c => c.jobId === assessment.jobId);
+    
+    // Randomly select 30-70% of THOSE candidates to have submitted responses
     const responseRate = 0.3 + Math.random() * 0.4;
-    const candidatesWhoResponded = candidates
-      .filter(() => Math.random() < responseRate)
-      .slice(0, Math.floor(candidates.length * responseRate));
+    const candidatesWhoResponded = jobCandidates.filter(() => Math.random() < responseRate);
     
     candidatesWhoResponded.forEach(candidate => {
       const answers: Record<string, any> = {};
