@@ -133,8 +133,9 @@ export function generateCandidates(count: number, jobs: Job[]): Candidate[] {
 export function generateAssessments(jobs: Job[]): Assessment[] {
   const assessments: Assessment[] = [];
   
-  // Create assessments for ALL jobs to ensure we have at least 25 assessments (exceeding the minimum of 3)
-  jobs.forEach((job, index) => {
+  // Create assessments for FIRST 6 jobs only (as per assignment requirement: at least 3 with 10+ questions each)
+  // We create 6 to exceed the minimum while keeping it reasonable
+  jobs.slice(0, 6).forEach((job, index) => {
     const sections = generateAssessmentSections(job);
     
     const assessment: Assessment = {
@@ -239,30 +240,6 @@ function generateTechnicalQuestions(tags: string[]): Question[] {
     options: ['Unit Testing', 'Integration Testing', 'E2E Testing', 'Manual Testing', 'Mix of All']
   });
 
-  // Question about version control
-  questions.push({
-    id: `tech-q${order++}`,
-    type: 'short-text',
-    title: 'Describe your experience with Git branching strategies.',
-    description: 'Which branching strategy do you prefer and why?',
-    required: true,
-    order: order - 1,
-    maxLength: 300,
-    placeholder: 'e.g., GitFlow, GitHub Flow, etc.'
-  });
-
-  // Architecture question
-  questions.push({
-    id: `tech-q${order++}`,
-    type: 'multi-choice',
-    title: 'Which architectural patterns have you implemented?',
-    description: 'Select all that apply.',
-    required: false,
-    order: order - 1,
-    options: ['MVC', 'MVP', 'MVVM', 'Microservices', 'Monolithic', 'Event-Driven', 'Layered Architecture'],
-    maxSelections: 4
-  });
-
   return questions;
 }
 
@@ -316,32 +293,6 @@ function generateExperienceQuestions(): Question[] {
     required: true,
     order: order - 1,
     options: ['Agile/Scrum', 'Kanban', 'Waterfall', 'DevOps', 'Hybrid Approach']
-  });
-
-  // Team size experience
-  questions.push({
-    id: `exp-q${order++}`,
-    type: 'numeric',
-    title: 'What is the largest team size you have worked in?',
-    description: 'Number of developers/engineers in the team.',
-    required: true,
-    order: order - 1,
-    min: 1,
-    max: 100,
-    step: 1,
-    unit: 'people'
-  });
-
-  // Leadership experience
-  questions.push({
-    id: `exp-q${order++}`,
-    type: 'short-text',
-    title: 'Do you have any experience mentoring junior developers or leading projects?',
-    description: 'Briefly describe your leadership or mentoring experience.',
-    required: false,
-    order: order - 1,
-    maxLength: 250,
-    placeholder: 'Describe your leadership experience...'
   });
 
   return questions;
