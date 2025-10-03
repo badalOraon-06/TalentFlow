@@ -2,7 +2,12 @@
 
 > A modern Applicant Tracking System (ATS) built with React, TypeScript, and cutting-edge web technologies.
 
-**Live Demo**: [https://talent-flow-rho.vercel.app/](https://talent-flow-rho.vercel.app/)  
+## **Live Demo**: [https://talent-flow-rho.vercel.app/](https://talent-flow-rho.vercel.app/)
+
+### 🎯 Demo Access
+
+**Click "Admin: admin@talentflow.com" on the login page to access the app with pre-seeded data. No authentication required!**
+
 ---
 
 ## 📖 Overview
